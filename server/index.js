@@ -228,6 +228,9 @@ app.get("/api/admin/students", requireRole("admin"), (req, res) => {
   }));
   res.json({ students: list });
 });
+app.get("/booking", (req, res) => res.sendFile(path.join(WEB_DIR, "booking.html")));
+app.get("/admin", (req, res) => res.sendFile(path.join(WEB_DIR, "admin.html")));
+app.get("/login", (req, res) => res.sendFile(path.join(WEB_DIR, "login.html")));
 
 /** ---------------- Booking ---------------- */
 // Student creates booking
