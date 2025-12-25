@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>go2køreskole – Booking</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="page-booking">
+  <!-- NAV -->
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__dot"></span>
+        go2køreskole
+      </a>
+
+      <nav class="menu">
+        <a href="index.html" data-i18n="navHome">Hjem</a>
+        <a href="booking.html" data-i18n="navBooking">Booking</a>
+        <a href="priser.html" data-i18n="navPrices">Priser</a>
+        <a href="kontakt.html" data-i18n="navContact">Kontakt</a>
+      </nav>
+
+      <div class="nav-actions" id="navUser">
+        <a class="btn btn--primary" href="booking.html" data-i18n="navBookNow">Book nu</a>
+
+        <button class="theme-toggle" id="themeToggle" type="button" title="Tema">
+          <span id="themeIcon">🌙</span>
+          <span id="themeText" data-i18n="themeDark">Mørk</span>
+        </button>
+
+        <button class="lang-toggle" id="langToggle" type="button" title="Sprog">
+          <span id="langText">DA</span>
+        </button>
+
+        <span id="navUserText" class="nav-chip"></span>
+        <a id="navLoginBtn" class="btn" href="login.html" data-i18n="navLogin">Login</a>
+        <button id="navLogoutBtn" class="btn" type="button" style="display:none;" data-i18n="navLogout">Log ud</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="section__head">
+          <h2 data-i18n="bookingTitle">Booking</h2>
+          <p class="muted" data-i18n="bookingIntro">Udfyld formularen og afvent godkendelse.</p>
+        </div>
+
+        <div class="booking-grid">
+          <!-- FORM -->
+          <div class="card">
+            <form id="bookingForm" class="form">
+              <label class="field">
+                <span>Vælg mødested</span>
+                <select id="address" required>
+                  <option value="">Vælg lokation…</option>
+                  <option value="Valby – Langgade St.">Valby – Langgade St.</option>
+                  <option value="Nørrebro – Nørrebro Station">Nørrebro – Nørrebro Station</option>
+                  <option value="Amager – Sundbyvester Plads">Amager – Sundbyvester Plads</option>
+                  <option value="Hvidovre – Friheden Station">Hvidovre – Friheden Station</option>
+                </select>
+              </label>
+
+              <div class="row">
+                <label class="field">
+                  <span>Dato</span>
+                  <input id="date" type="date" required />
+                </label>
+
+                <label class="field">
+                  <span>Tidspunkt</span>
+                  <input id="time" type="time" value="09:00" required />
+                </label>
+              </div>
+
+              <div class="row">
+                <label class="field">
+                  <span>Varighed</span>
+                  <select id="duration" required>
+                    <option value="45">45 min</option>
+                    <option value="60">60 min</option>
+                    <option value="90">90 min</option>
+                    <option value="120">120 min</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Type</span>
+                  <select id="lessonType" required>
+                    <option value="Kørelektion">Kørelektion</option>
+                    <option value="Manøvrebane">Manøvrebane</option>
+                    <option value="Teori">Teori</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="field">
+                <span>Note (valgfri)</span>
+                <textarea id="note" rows="3" placeholder="Fx jeg vil gerne øve parkering"></textarea>
+              </label>
+
+              <button class="btn btn--primary btn--full" type="submit">Bekræft booking</button>
+              <p class="small muted">Ved at booke accepterer du vores vilkår.</p>
+
+              <div id="formStatus" class="status" aria-live="polite"></div>
+            </form>
+          </div>
+
+          <!-- MY BOOKINGS -->
+          <div class="card">
+            <h3>Mine bookinger</h3>
+            <p class="muted">Her kan du se status på dine tider.</p>
+
+            <div id="myBookings" class="muted">Indlæser…</div>
+
+            <div class="hint">
+              Tip: Status opdateres automatisk hvert 10. sekund.
+            </div>
+
+            <hr />
+
+            <h3>Din booking-kvittering</h3>
+            <p class="muted">Når du bekræfter, vises detaljerne her.</p>
+
+            <div class="receipt" id="receipt">
+              <div class="receipt__empty">Ingen booking endnu.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <span>© go2køreskole</span>
+        <span class="muted">Booking demo</span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin – go2køreskole</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+
+<body>
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__dot"></span> go2køreskole
+      </a>
+
+      <nav class="menu">
+        <a id="navHome" href="index.html">Hjem</a>
+        <a id="navBooking" href="booking.html">Booking</a>
+        <a id="navPrices" href="priser.html">Priser</a>
+        <a id="navContact" href="kontakt.html">Kontakt</a>
+      </nav>
+
+      <a id="navBookNow" class="btn btn--primary" href="booking.html">Book nu</a>
+
+      <button class="theme-toggle" id="themeToggle" type="button">
+        <span id="themeIcon">🌙</span>
+        <span id="themeText">Mørk</span>
+      </button>
+
+      <button class="lang-toggle" id="langToggle" type="button" aria-label="Skift sprog">
+        <span id="langText">DA</span>
+      </button>
+
+      <div id="navUser" style="display:flex; gap:12px; align-items:center;">
+        <span id="navUserText" class="muted"></span>
+        <a id="navLoginBtn" class="btn" href="login.html">Login</a>
+        <button id="navLogoutBtn" class="btn" style="display:none;">Log ud</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section" style="padding-top:110px;">
+      <div class="container section__head">
+        <h1 style="margin:0 0 8px;">Admin</h1>
+        <p class="muted" style="margin:0;">Se bookinger og godkend/afvis. Opret elever.</p>
+      </div>
+<body class="page-admin">
+
+      <div class="container" style="display:grid; gap:24px; grid-template-columns:1fr;">
+        <!-- Top row: create student + students list -->
+        <div style="display:grid; gap:24px; grid-template-columns:1fr;">
+          <div class="card">
+            <h3 style="margin-top:0;">Opret elev</h3>
+            <form id="studentForm" class="form">
+              <div class="row">
+                <label class="field">
+                  <span>Navn</span>
+                  <input id="stuName" placeholder="Fx Muhammad Feyaz" required />
+                </label>
+                <label class="field">
+                  <span>Telefon</span>
+                  <input id="stuPhone" placeholder="+45 12 34 56 78" required />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>E-mail</span>
+                <input id="stuEmail" type="email" placeholder="navn@mail.dk" required />
+              </label>
+
+              <label class="field">
+                <span>Kodeord</span>
+                <input id="stuPassword" type="password" placeholder="Vælg kodeord" required />
+              </label>
+
+              <button class="btn btn--primary" type="submit">Opret elev</button>
+              <div id="stuStatus" class="status" aria-live="polite"></div>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Elever</h3>
+            <div id="studentsList" class="muted">Indlæser…</div>
+          </div>
+        </div>
+
+        <!-- Bookings -->
+        <div class="card">
+          <h3 style="margin-top:0;">Bookinger</h3>
+          <p class="muted" style="margin-top:0;">Klik godkend/afvis. Godkendt blokkerer dobbel-booking (overlap).</p>
+          <div id="adminBookings" class="muted">Indlæser…</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <span>© go2køreskole</span>
+        <span class="muted">Admin</span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./app.js"></script>
+
+  <!-- Admin logic (self-contained) -->
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+
+      async function api(path, options = {}) {
+        const res = await fetch(path, { credentials: "include", ...options });
+        const data = await res.json().catch(() => ({}));
+        return { res, data };
+      }
+
+      function esc(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function badge(status) {
+        const s = String(status || "PENDING").toUpperCase();
+        if (s === "APPROVED") return "✅ GODKENDT";
+        if (s === "DENIED") return "❌ AFVIST";
+        return "⏳ AFVENTER";
+      }
+
+      async function requireAdminOrRedirect() {
+        const { data } = await api("/api/auth/me");
+        const u = data.user;
+        if (!u) { window.location.href = "/login.html"; return false; }
+        if (u.role !== "admin") { window.location.href = "/index.html"; return false; }
+        return true;
+      }
+
+      async function loadStudents() {
+        const el = $("studentsList");
+        if (!el) return;
+        const { res, data } = await api("/api/admin/students");
+        if (!res.ok) { el.textContent = "Kunne ikke hente elever."; return; }
+
+        const list = data.students || [];
+        if (!list.length) { el.textContent = "Ingen elever endnu."; return; }
+
+        el.innerHTML = `
+          <div style="display:grid; gap:10px;">
+            ${list.map(s => `
+              <div class="card" style="padding:14px;">
+                <div><strong>${esc(s.name)}</strong></div>
+                <div class="muted">${esc(s.email)} • ${esc(s.phone || "")}</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      async function loadBookings() {
+        const el = $("adminBookings");
+        if (!el) return;
+
+        const { res, data } = await api("/api/admin/bookings");
+        if (!res.ok) { el.textContent = "Kunne ikke hente bookinger."; return; }
+
+        const list = data.bookings || [];
+        if (!list.length) { el.textContent = "Ingen bookinger endnu."; return; }
+
+        el.innerHTML = `
+          <div style="display:grid; gap:10px;">
+            ${list.map(b => `
+              <div class="card" style="padding:14px;">
+                <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                  <div>
+                    <strong>${esc(b.fullName || b.email || "Elev")}</strong>
+                    <span class="muted">(${esc(b.studentEmail || b.email || "")})</span>
+                  </div>
+                  <div class="muted"><strong>${badge(b.status)}</strong></div>
+                </div>
+
+                <div class="muted" style="margin-top:6px;">
+                  <strong>${esc(b.lessonType || "Kørelektion")}</strong> •
+                  ${esc(b.date)} kl. ${esc(b.startTime)} • ${esc(b.durationMin)} min
+                </div>
+
+                <div class="muted" style="margin-top:6px;">
+                  Adresse: ${esc(b.address || "-")}
+                </div>
+
+                ${b.note ? `<div class="muted" style="margin-top:6px;">Note: ${esc(b.note)}</div>` : ""}
+
+                <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+                  <button class="btn btn--primary" data-approve="${esc(b.id)}" ${String(b.status).toUpperCase()==="APPROVED" ? "disabled" : ""}>
+                    Godkend
+                  </button>
+                  <button class="btn" data-deny="${esc(b.id)}" ${String(b.status).toUpperCase()==="DENIED" ? "disabled" : ""}>
+                    Afvis
+                  </button>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+
+        // Wire buttons
+        el.querySelectorAll("[data-approve]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-approve");
+            const { res, data } = await api(`/api/admin/bookings/${id}/approve`, { method: "POST" });
+            if (!res.ok) {
+              alert(data?.message || "Kunne ikke godkende (måske overlap).");
+              return;
+            }
+            loadBookings();
+          });
+        });
+
+        el.querySelectorAll("[data-deny]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-deny");
+            const { res, data } = await api(`/api/admin/bookings/${id}/deny`, { method: "POST" });
+            if (!res.ok) {
+              alert(data?.message || "Kunne ikke afvise.");
+              return;
+            }
+            loadBookings();
+          });
+        });
+      }
+
+      function setStatus(el, text, type="") {
+        if (!el) return;
+        el.textContent = text;
+        el.className = `status ${type}`.trim();
+      }
+
+      async function initStudentForm() {
+        const form = $("studentForm");
+        const statusEl = $("stuStatus");
+        if (!form) return;
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          setStatus(statusEl, "");
+
+          const payload = {
+            name: $("stuName")?.value?.trim() || "",
+            phone: $("stuPhone")?.value?.trim() || "",
+            email: $("stuEmail")?.value?.trim() || "",
+            password: $("stuPassword")?.value || ""
+          };
+
+          if (!payload.name || !payload.phone || !payload.email || !payload.password) {
+            setStatus(statusEl, "Udfyld alle felter.", "error");
+            return;
+          }
+
+          const { res, data } = await api("/api/admin/students", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            setStatus(statusEl, data?.error === "EMAIL_EXISTS" ? "E-mail findes allerede." : "Kunne ikke oprette elev.", "error");
+            return;
+          }
+
+          setStatus(statusEl, "✅ Elev oprettet!", "success");
+          form.reset();
+          loadStudents();
+        });
+      }
+
+      async function init() {
+        const ok = await requireAdminOrRedirect();
+        if (!ok) return;
+
+        await initStudentForm();
+        await loadStudents();
+        await loadBookings();
+
+        // auto refresh booking status
+        setInterval(loadBookings, 8000);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

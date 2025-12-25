@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – go2køreskole</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__dot"></span> go2køreskole
+      </a>
+
+      <nav class="menu">
+        <a id="navHome" href="index.html">Hjem</a>
+        <a id="navBooking" href="booking.html">Booking</a>
+        <a id="navPrices" href="priser.html">Priser</a>
+        <a id="navContact" href="kontakt.html">Kontakt</a>
+      </nav>
+
+      <a id="navBookNow" class="btn btn--primary" href="booking.html">Book nu</a>
+
+      <button class="theme-toggle" id="themeToggle" type="button">
+        <span id="themeIcon">🌙</span>
+        <span id="themeText">Mørk</span>
+      </button>
+
+      <button class="lang-toggle" id="langToggle" type="button" aria-label="Skift sprog">
+        <span id="langText">DA</span>
+      </button>
+
+      <div id="navUser" style="display:flex; gap:12px; align-items:center;">
+        <span id="navUserText" class="muted"></span>
+        <a id="navLoginBtn" class="btn" href="login.html">Login</a>
+        <button id="navLogoutBtn" class="btn" style="display:none;">Log ud</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section" style="padding-top:110px;">
+      <div class="container" style="max-width:560px;">
+        <div class="card">
+          <h1 style="margin:0 0 8px;">Login</h1>
+          <p class="muted" style="margin:0 0 18px;">Log ind for at få adgang til booking og admin.</p>
+
+          <form id="loginForm" class="form">
+            <label class="field">
+              <span>E-mail</span>
+              <input id="loginEmail" type="email" placeholder="navn@mail.dk" required />
+            </label>
+
+            <label class="field">
+              <span>Kodeord</span>
+              <input id="loginPassword" type="password" placeholder="••••••••" required />
+            </label>
+
+            <button class="btn btn--primary" type="submit">Log ind</button>
+            <div id="loginStatus" class="status" aria-live="polite" style="margin-top:10px;"></div>
+          </form>
+
+          <p class="muted" style="margin-top:14px; font-size:14px;">
+            Hvis du ikke har en bruger, skal admin oprette dig først.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <span>© go2køreskole</span>
+        <span class="muted">Login</span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./app.js"></script>
+
+  <!-- Login logic (self-contained) -->
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+
+      async function api(path, options = {}) {
+        const res = await fetch(path, { credentials: "include", ...options });
+        const data = await res.json().catch(() => ({}));
+        return { res, data };
+      }
+
+      const form = $("loginForm");
+      const statusEl = $("loginStatus");
+
+      function setStatus(text, type = "") {
+        if (!statusEl) return;
+        statusEl.textContent = text;
+        statusEl.className = `status ${type}`.trim();
+      }
+
+      if (form) {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          setStatus("");
+
+          const email = $("loginEmail")?.value?.trim() || "";
+          const password = $("loginPassword")?.value || "";
+
+          if (!email || !password) {
+            setStatus("Udfyld e-mail og kodeord.", "error");
+            return;
+          }
+
+          const { res, data } = await api("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+
+          if (!res.ok) {
+            setStatus("Forkert e-mail eller kodeord.", "error");
+            return;
+          }
+
+          const user = data.user;
+          setStatus("✅ Logget ind!", "success");
+
+          // Redirect efter rolle
+          if (user?.role === "admin") {
+            window.location.href = "/admin.html";
+          } else {
+            window.location.href = "/index.html";
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
