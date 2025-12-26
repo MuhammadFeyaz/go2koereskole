@@ -2,22 +2,28 @@
    go2køreskole – style.css
    ========================= */
 
-/* -------- Theme tokens -------- */
+/* -------- Theme tokens (LIGHT default) -------- */
 :root {
-  --bg: #f6f8fb;
-  --panel: rgba(255, 255, 255, 0.85);
-  --card: rgba(255, 255, 255, 0.9);
+  /* Light “glow” background ligesom dark, bare lys */
+  --bg:
+    radial-gradient(900px 520px at 18% 8%, rgba(120, 255, 190, 0.22), transparent 60%),
+    radial-gradient(820px 520px at 78% 0%, rgba(90, 150, 255, 0.18), transparent 55%),
+    radial-gradient(900px 700px at 55% 92%, rgba(50, 255, 140, 0.12), transparent 55%),
+    #f6f8fb;
+
+  --panel: rgba(255, 255, 255, 0.78);
+  --card: rgba(255, 255, 255, 0.86);
   --text: #0b1220;
-  --muted: rgba(11, 18, 32, 0.65);
+  --muted: rgba(11, 18, 32, 0.66);
 
   --border: rgba(11, 18, 32, 0.10);
-  --shadow: 0 20px 60px rgba(11, 18, 32, 0.12);
+  --shadow: 0 22px 70px rgba(11, 18, 32, 0.10);
 
   --accent: #c9f3b8;        /* grøn */
   --accent-2: #8be7a8;
   --accent-text: #0b1220;
 
-  --nav-bg: rgba(255, 255, 255, 0.75);
+  --nav-bg: rgba(255, 255, 255, 0.70);
   --nav-border: rgba(11, 18, 32, 0.08);
 
   --radius: 22px;
@@ -26,12 +32,13 @@
   --container: 1100px;
 }
 
-/* Dark */
+/* -------- Dark tokens -------- */
 html[data-theme="dark"] {
-  --bg: radial-gradient(1200px 600px at 20% 10%, rgba(120, 255, 190, 0.20), transparent 60%),
-        radial-gradient(900px 500px at 80% 0%, rgba(90, 150, 255, 0.18), transparent 55%),
-        radial-gradient(900px 700px at 50% 90%, rgba(50, 255, 140, 0.10), transparent 55%),
-        #070b14;
+  --bg:
+    radial-gradient(1200px 600px at 20% 10%, rgba(120, 255, 190, 0.20), transparent 60%),
+    radial-gradient(900px 500px at 80% 0%, rgba(90, 150, 255, 0.18), transparent 55%),
+    radial-gradient(900px 700px at 50% 90%, rgba(50, 255, 140, 0.10), transparent 55%),
+    #070b14;
 
   --panel: rgba(10, 20, 40, 0.70);
   --card: rgba(12, 26, 52, 0.75);
@@ -48,6 +55,7 @@ html[data-theme="dark"] {
 /* -------- Base -------- */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
+
 body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
@@ -92,10 +100,6 @@ hr {
   user-select: none;
 }
 
-html[data-theme="light"] .btn:not(.btn--primary) { 
-  background: rgba(255,255,255,0.7); 
-}
-
 .btn:hover { transform: translateY(-1px); }
 .btn:active { transform: translateY(0px); }
 
@@ -103,7 +107,7 @@ html[data-theme="light"] .btn:not(.btn--primary) {
   background: var(--accent);
   border-color: rgba(0,0,0,0.10);
   color: var(--accent-text);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .btn--full { width: 100%; }
@@ -151,7 +155,7 @@ html[data-theme="light"] .btn:not(.btn--primary) {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.2px;
 }
 
@@ -170,12 +174,14 @@ html[data-theme="light"] .btn:not(.btn--primary) {
   gap: 18px;
   padding: 0 10px;
 }
+
 .menu a {
   padding: 10px 12px;
   border-radius: 999px;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 700;
 }
+
 .menu a:hover {
   background: rgba(255,255,255,0.08);
   color: var(--text);
@@ -199,18 +205,14 @@ html[data-theme="light"] .btn:not(.btn--primary) {
   background: rgba(255,255,255,0.06);
   cursor: pointer;
   color: var(--text);
-}
-
-html[data-theme="light"] .theme-toggle,
-html[data-theme="light"] .lang-toggle {
-  background: rgba(255,255,255,0.7);
+  transition: transform .08s ease, background .15s ease, border-color .15s ease;
 }
 
 .theme-toggle:hover, .lang-toggle:hover { transform: translateY(-1px); }
 
 /* burger button (DEFAULT: hidden on desktop) */
 .nav__toggle {
-  display: none !important; /* <-- vigtig: burger må ikke dukke op på desktop */
+  display: none !important; /* burger må ikke dukke op på desktop */
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -302,7 +304,7 @@ html[data-theme="light"] .lang-toggle {
 }
 
 .field { display: grid; gap: 8px; margin-bottom: 12px; }
-.field span { font-weight: 700; font-size: 14px; color: var(--muted); }
+.field span { font-weight: 800; font-size: 14px; color: var(--muted); }
 
 input, select, textarea {
   width: 100%;
@@ -314,10 +316,14 @@ input, select, textarea {
   outline: none;
 }
 
-html[data-theme="light"] input,
-html[data-theme="light"] select,
-html[data-theme="light"] textarea {
-  background: rgba(255,255,255,0.9);
+/* Fix: dropdown options skal være læsbare i dark mode */
+html[data-theme="dark"] select option {
+  background: #0c1a34;
+  color: rgba(255,255,255,0.92);
+}
+html[data-theme="light"] select option {
+  background: #ffffff;
+  color: #0b1220;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -392,10 +398,10 @@ input:focus, select:focus, textarea:focus {
     gap: 12px;
   }
 
-  /* ✅ burger vises kun her */
+  /* burger vises kun her */
   .nav__toggle { display: inline-flex !important; align-items: center; gap: 8px; }
 
-  /* ✅ skjul menu & right indtil åbnet */
+  /* skjul menu & right indtil åbnet */
   .menu { display: none !important; }
   .nav__right { display: none !important; }
 
@@ -429,14 +435,31 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* ✅ Ekstra sikkerhed: desktop tving menu/right synlige */
+/* Desktop: tving menu/right synlige + tving burger skjult */
 @media (min-width: 861px) {
   .menu { display: flex !important; }
   .nav__right { display: flex !important; }
+  .nav__toggle { display: none !important; }
 }
-/* FORCE: burger må ALDRIG vises på desktop */
-@media (min-width: 861px) {
-  .nav__toggle {
-    display: none !important;
-  }
+
+/* -------- Light polish (premium look) -------- */
+html[data-theme="light"] .card {
+  background: rgba(255,255,255,0.88);
+  border-color: rgba(11,18,32,0.08);
+  box-shadow: 0 22px 70px rgba(11,18,32,0.10);
+}
+
+/* Buttons i light: secondary glass, primary grøn */
+html[data-theme="light"] .btn:not(.btn--primary) {
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(11,18,32,0.10);
+}
+
+html[data-theme="light"] .btn:not(.btn--primary):hover {
+  background: rgba(255,255,255,0.88);
+}
+
+/* Nav hover lidt mere tydeligt i light */
+html[data-theme="light"] .menu a:hover {
+  background: rgba(11,18,32,0.06);
 }
