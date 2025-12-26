@@ -16,9 +16,27 @@
       .replaceAll("'", "&#039;");
   }
 
+  // ---------- Locations (loaded from backend) ----------
+  let allowedLocations = [];
+  const fallbackLocations = ["Valby St.", "Brøndby", "Amager", "Glostrup"];
+
+  async function loadLocations() {
+    const { res, data } = await api("/api/locations");
+    if (!res.ok) {
+      allowedLocations = fallbackLocations.slice();
+      return allowedLocations;
+    }
+    const list = Array.isArray(data.locations) ? data.locations : [];
+    allowedLocations = list.length ? list : fallbackLocations.slice();
+    return allowedLocations;
+  }
+
   // ---------------- I18N (DA/EN) ----------------
   const translations = {
     da: {
+      siteTitle: "go2køreskole",
+      brandName: "go2køreskole",
+
       themeDark: "Mørk",
       themeLight: "Lys",
 
@@ -31,17 +49,24 @@
       navLogout: "Log ud",
       navMenu: "Menu",
 
+      heroTitle: "Book din kørelektion nemt 🚗",
+      heroText: "Vælg dato og tidspunkt — få svar hurtigt.",
+      heroCTA1: "Gå til booking",
+      heroCTA2: "Se priser",
+
+      hoursTitle: "Åbningstider",
+      hoursLine1: "Man–Fre: 08–20",
+      hoursLine2: "Lørdag: 10–16",
+      hoursLine3: "Søndag: Lukket",
+
+      nextLessonTitle: "Din kommende køretime",
+      nextLessonLogin: "Log ind for at se dine kommende tider.",
+      nextLessonCta: "Gå til booking",
+      nextLessonNone: "Du har ingen kommende køretimer.",
+      nextLessonNoApproved: "Du har ingen godkendte køretimer endnu.",
+
       bookingTitle: "Booking",
       bookingIntro: "Udfyld formularen og afvent godkendelse.",
-      meetingPlace: "Vælg mødested",
-      pickLocation: "Vælg lokation...",
-      date: "Dato",
-      time: "Tidspunkt",
-      duration: "Varighed",
-      type: "Type",
-      note: "Note (valgfri)",
-      confirmBooking: "Bekræft booking",
-
       fillAll: "Udfyld venligst alle felter.",
       invalidLocation: "Vælg venligst et gyldigt mødested.",
       bookingSent: "✅ Booking sendt! Afventer godkendelse.",
@@ -50,13 +75,20 @@
       cannotLoadMyBookings: "Kunne ikke hente dine bookinger.",
       noneYet: "Ingen bookinger endnu.",
 
-      nextLessonTitle: "Din kommende køretime",
-      nextLessonLogin: "Log ind for at se dine kommende tider.",
-      nextLessonNone: "Du har ingen kommende køretimer.",
-      nextLessonNoApproved: "Du har ingen godkendte køretimer endnu.",
+      pickLocation: "Vælg lokation...",
+
+      footerTag: "Køreskole booking",
+
+      aboutTitle: "Om Go2 Køreskole i København",
+      aboutP1: "Velkommen hos Go2 Køreskole i København! Mit navn er Karim, og jeg er ejer af køreskolen – så det er dermed mig, du kommer til at få som kørelærer.",
+      aboutP2: "Jeg er oprindeligt uddannet socialrådgiver, men har sidenhen valgt at skifte spor og få en levevej i køreskolebranchen.",
+      aboutP3: "Jeg har god empati og er god til at håndtere elevers individuelle problemer, så de får en så god proces som mulig. Jeg tager mit arbejde seriøst, men ønsker samtidig, at det skal være en sjov og lærerig proces at få kørekort!"
     },
 
     en: {
+      siteTitle: "go2 driving school",
+      brandName: "go2koereskole",
+
       themeDark: "Dark",
       themeLight: "Light",
 
@@ -69,17 +101,24 @@
       navLogout: "Logout",
       navMenu: "Menu",
 
+      heroTitle: "Book your driving lesson easily 🚗",
+      heroText: "Choose date and time — get a quick reply.",
+      heroCTA1: "Go to booking",
+      heroCTA2: "See prices",
+
+      hoursTitle: "Opening hours",
+      hoursLine1: "Mon–Fri: 08–20",
+      hoursLine2: "Saturday: 10–16",
+      hoursLine3: "Sunday: Closed",
+
+      nextLessonTitle: "Your upcoming lesson",
+      nextLessonLogin: "Log in to see your upcoming lessons.",
+      nextLessonCta: "Go to booking",
+      nextLessonNone: "You have no upcoming lessons.",
+      nextLessonNoApproved: "You don’t have any approved lessons yet.",
+
       bookingTitle: "Booking",
       bookingIntro: "Fill out the form and wait for approval.",
-      meetingPlace: "Meeting place",
-      pickLocation: "Choose location...",
-      date: "Date",
-      time: "Time",
-      duration: "Duration",
-      type: "Type",
-      note: "Note (optional)",
-      confirmBooking: "Confirm booking",
-
       fillAll: "Please fill in all fields.",
       invalidLocation: "Please select a valid meeting place.",
       bookingSent: "✅ Booking sent! Waiting for approval.",
@@ -88,10 +127,14 @@
       cannotLoadMyBookings: "Could not load your bookings.",
       noneYet: "No bookings yet.",
 
-      nextLessonTitle: "Your upcoming lessons",
-      nextLessonLogin: "Log in to see your upcoming lessons.",
-      nextLessonNone: "You have no upcoming lessons.",
-      nextLessonNoApproved: "You don’t have any approved lessons yet.",
+      pickLocation: "Choose location...",
+
+      footerTag: "Driving school booking",
+
+      aboutTitle: "About Go2 Driving School in Copenhagen",
+      aboutP1: "Welcome to Go2 Driving School in Copenhagen! My name is Karim, and I own the school — so I’ll be your instructor.",
+      aboutP2: "I was originally trained as a social worker, but later switched paths and found my career in the driving school industry.",
+      aboutP3: "I’m empathetic and good at supporting students individually so they get the best possible learning process. I take my work seriously, but I also want it to be fun and educational!"
     },
   };
 
@@ -109,6 +152,9 @@
   function applyI18n(lang) {
     const dict = translations[lang] || translations.da;
 
+    // ✅ oversæt titel
+    if (dict.siteTitle) document.title = dict.siteTitle;
+
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (!key) return;
@@ -120,12 +166,12 @@
     const langText = $("langText");
     if (langText) langText.textContent = lang.toUpperCase();
 
-    // theme button text
+    // keep theme button label correct
     const theme = document.documentElement.getAttribute("data-theme") || "light";
     const themeText = $("themeText");
     if (themeText) themeText.textContent = theme === "dark" ? dict.themeLight : dict.themeDark;
 
-    // booking placeholder
+    // booking select placeholder
     const addrSelect = $("address");
     if (addrSelect && addrSelect.tagName === "SELECT") {
       const opt0 = addrSelect.querySelector('option[value=""]');
@@ -139,22 +185,18 @@
     const btn = $("langToggle");
     if (!btn) return;
 
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const current = getLang();
       const next = current === "da" ? "en" : "da";
       setLang(next);
       applyI18n(next);
-
-      // re-render select placeholder in correct language
-      renderLocationsSelect();
-      loadNextLessons();
+      await loadNextLessons();
     });
   }
 
-  // ---------------- THEME ----------------
+  // ---------------- THEME (LIGHT/DARK) ----------------
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
-
     const icon = $("themeIcon");
     if (icon) icon.textContent = theme === "dark" ? "☀️" : "🌙";
 
@@ -180,9 +222,14 @@
       localStorage.setItem("theme", next);
       applyTheme(next);
     });
+
+    if (!saved && window.matchMedia) {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      mq.addEventListener?.("change", (e) => applyTheme(e.matches ? "dark" : "light"));
+    }
   }
 
-  // ---------------- MOBILE NAV (optional) ----------------
+  // ---------------- MOBILE NAV ----------------
   function initMobileNav() {
     const nav = document.querySelector(".nav");
     const btn = $("navToggle");
@@ -237,32 +284,7 @@
     };
   }
 
-  // ---------------- LOCATIONS (from backend) ----------------
-  let allowedLocations = [];
-
-  async function loadLocations() {
-    const { res, data } = await api("/api/locations");
-    if (!res.ok) {
-      console.warn("Could not load /api/locations", res.status, data);
-      allowedLocations = [];
-      return [];
-    }
-    const list = Array.isArray(data.locations) ? data.locations : [];
-    allowedLocations = list;
-    return list;
-  }
-
-  function renderLocationsSelect() {
-    const address = $("address");
-    if (!address || address.tagName !== "SELECT") return;
-
-    address.innerHTML = `
-      <option value="">${esc(t("pickLocation"))}</option>
-      ${allowedLocations.map((loc) => `<option value="${esc(loc)}">${esc(loc)}</option>`).join("")}
-    `;
-  }
-
-  // ---------------- NEXT LESSONS (index.html) ----------------
+  // ---------------- NEXT LESSONS ----------------
   async function loadNextLessons() {
     const el = $("nextLessonContent");
     if (!el) return;
@@ -311,141 +333,30 @@
     `;
   }
 
-  // ---------------- MY BOOKINGS (booking.html) ----------------
-  function badge(status) {
-    const s = String(status || "PENDING").toUpperCase();
-    if (s === "APPROVED") return "✅ GODKENDT";
-    if (s === "DENIED") return "❌ AFVIST";
-    return "⏳ AFVENTER";
-  }
+  // ---------------- Booking select ----------------
+  function initLocationsSelect() {
+    const address = $("address");
+    if (!address || address.tagName !== "SELECT") return;
 
-  async function loadMyBookings() {
-    const el = $("myBookings");
-    if (!el) return;
-
-    const { res, data } = await api("/api/bookings/my");
-    if (!res.ok) {
-      el.textContent = t("cannotLoadMyBookings");
-      return;
-    }
-
-    const list = data.bookings || [];
-    if (!list.length) {
-      el.textContent = t("noneYet");
-      return;
-    }
-
-    list.sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`));
-
-    el.innerHTML = `
-      <div style="display:grid; gap:10px;">
-        ${list
-          .map(
-            (b) => `
-          <div class="card" style="padding:14px;">
-            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-              <div><strong>${esc(b.lessonType || "Kørelektion")}</strong> – ${esc(b.date)} kl. ${esc(b.startTime)}</div>
-              <div class="muted"><strong>${badge(b.status)}</strong></div>
-            </div>
-            <div class="muted" style="margin-top:6px;">
-              ${esc(b.durationMin)} min • ${esc(b.address)}
-            </div>
-            ${b.note ? `<div class="muted" style="margin-top:6px;">Note: ${esc(b.note)}</div>` : ""}
-          </div>
-        `
-          )
-          .join("")}
-      </div>
+    address.innerHTML = `
+      <option value="">${esc(t("pickLocation"))}</option>
+      ${allowedLocations.map((loc) => `<option value="${esc(loc)}">${esc(loc)}</option>`).join("")}
     `;
   }
 
-  // ---------------- BOOKING SUBMIT ----------------
-  const form = $("bookingForm");
-  const receipt = $("receipt");
-  const statusEl = $("formStatus");
-
-  function setStatus(text, type = "") {
-    if (!statusEl) return;
-    statusEl.textContent = text;
-    statusEl.className = `status ${type}`.trim();
-  }
-
-  function renderReceipt(b) {
-    if (!receipt) return;
-    receipt.innerHTML = `
-      <div class="receipt__row"><strong>Type:</strong> <span>${esc(b.lessonType || "-")}</span></div>
-      <div class="receipt__row"><strong>${esc(t("date"))}:</strong> <span>${esc(b.date || "-")}</span></div>
-      <div class="receipt__row"><strong>${esc(t("time"))}:</strong> <span>${esc(b.startTime || "-")}</span></div>
-      <div class="receipt__row"><strong>${esc(t("duration"))}:</strong> <span>${esc(b.durationMin ?? "-")} min</span></div>
-      <div class="receipt__row"><strong>${esc(t("meetingPlace"))}:</strong> <span>${esc(b.address || "-")}</span></div>
-      ${b.note ? `<hr /><div class="receipt__row"><strong>${esc(t("note"))}:</strong> <span>${esc(b.note)}</span></div>` : ""}
-      <hr />
-      <div class="receipt__row"><strong>Status:</strong> <span>${esc(b.status || "PENDING")}</span></div>
-    `;
-  }
-
+  // ---------------- INIT ----------------
   async function init() {
     initTheme();
     initLanguage();
     initMobileNav();
     await initNavbarUser();
 
-    // ✅ load -> render (ellers ser du ingen lokationer)
+    // locations for booking page
     await loadLocations();
-    renderLocationsSelect();
+    initLocationsSelect();
 
     await loadNextLessons();
-    if ($("nextLessonContent")) setInterval(loadNextLessons, 10000);
-
-    await loadMyBookings();
-    if ($("myBookings")) setInterval(loadMyBookings, 10000);
   }
 
   init();
-
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      setStatus("");
-
-      const payload = {
-        address: $("address")?.value?.trim() || "",
-        date: $("date")?.value || "",
-        startTime: $("time")?.value || "",
-        durationMin: Number($("duration")?.value || 0),
-        lessonType: $("lessonType")?.value || "Kørelektion",
-        note: $("note")?.value?.trim() || "",
-      };
-
-      if (!payload.address || !payload.date || !payload.startTime || !payload.durationMin) {
-        setStatus(t("fillAll"), "error");
-        return;
-      }
-
-      if (!allowedLocations.includes(payload.address)) {
-        setStatus(t("invalidLocation"), "error");
-        return;
-      }
-
-      const { res, data } = await api("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        if (res.status === 409 && data?.error === "TIME_TAKEN") {
-          setStatus(data?.message || t("timeTaken"), "error");
-        } else {
-          setStatus(data?.error || t("bookingFailed"), "error");
-        }
-        return;
-      }
-
-      renderReceipt(data);
-      setStatus(t("bookingSent"), "success");
-      loadMyBookings();
-      loadNextLessons();
-    });
-  }
 })();

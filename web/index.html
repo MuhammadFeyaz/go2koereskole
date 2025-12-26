@@ -14,7 +14,7 @@
 
       <div class="nav__toprow">
         <a class="brand" href="index.html">
-          <span class="brand__dot"></span> go2køreskole
+          <span class="brand__dot"></span> <span data-i18n="brandName">go2køreskole</span>
         </a>
 
         <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu">
@@ -66,19 +66,25 @@
 
         <div class="card">
           <h3 data-i18n="hoursTitle">Åbningstider</h3>
-          <p>Man–Fre: 08–20<br>Lørdag: 10–16<br>Søndag: Lukket</p>
+          <p>
+            <span data-i18n="hoursLine1">Man–Fre: 08–20</span><br>
+            <span data-i18n="hoursLine2">Lørdag: 10–16</span><br>
+            <span data-i18n="hoursLine3">Søndag: Lukket</span>
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- NEXT LESSON -->
+    <!-- NEXT LESSONS -->
     <section class="section" id="nextLesson">
       <div class="container">
         <div class="card next-lesson-card">
           <h3 data-i18n="nextLessonTitle">Din kommende køretime</h3>
+
           <div id="nextLessonContent" class="muted" data-i18n="nextLessonLogin">
-            Log ind for at se din næste tid.
+            Log ind for at se dine kommende tider.
           </div>
+
           <div class="next-lesson-actions">
             <a class="btn btn--primary" href="booking.html" data-i18n="nextLessonCta">
               Gå til booking
@@ -93,15 +99,12 @@
       <div class="container about-grid">
         <div class="about-text">
           <h2 data-i18n="aboutTitle">Om Go2 Køreskole i København</h2>
-
           <p data-i18n="aboutP1">
             Velkommen hos Go2 Køreskole i København! Mit navn er Karim, og jeg er ejer af køreskolen – så det er dermed mig, du kommer til at få som kørelærer.
           </p>
-
           <p data-i18n="aboutP2">
             Jeg er oprindeligt uddannet socialrådgiver, men har sidenhen valgt at skifte spor og få en levevej i køreskolebranchen.
           </p>
-
           <p data-i18n="aboutP3">
             Jeg har god empati og er god til at håndtere elevers individuelle problemer, så de får en så god proces som mulig. Jeg tager mit arbejde seriøst, men ønsker samtidig, at det skal være en sjov og lærerig proces at få kørekort!
           </p>
@@ -113,10 +116,9 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
       <div class="container footer__inner">
-        <span>© go2køreskole</span>
+        <span>© <span data-i18n="brandName">go2køreskole</span></span>
         <span class="muted" data-i18n="footerTag">Køreskole booking</span>
       </div>
     </footer>
