@@ -8,6 +8,7 @@
 </head>
 
 <body>
+  <!-- NAV -->
   <header class="nav">
     <div class="container nav__inner">
 
@@ -50,7 +51,7 @@
   </header>
 
   <main>
-    <section class="section" style="padding-top:24px;">
+    <section class="section">
       <div class="container">
         <div class="section__head">
           <h2 data-i18n="bookingTitle">Booking</h2>
@@ -95,8 +96,6 @@
                   <span data-i18n="type">Type</span>
                   <select id="lessonType" required>
                     <option value="Kørelektion">Kørelektion</option>
-                    <option value="Teori">Teori</option>
-                    <option value="Manøvrebane">Manøvrebane</option>
                   </select>
                 </label>
               </div>
@@ -114,18 +113,20 @@
             </form>
           </div>
 
-          <!-- MY BOOKINGS -->
+          <!-- RECEIPT + MY BOOKINGS -->
           <div class="card">
-            <h3 style="margin-top:0;">Mine bookinger</h3>
-            <div id="myBookings" class="muted">Indlæser...</div>
+            <h3>Din booking-kvittering</h3>
+            <p class="muted">Når du bekræfter, vises detaljerne her.</p>
 
-            <hr />
-            <h3 style="margin-top:0;">Kvittering</h3>
             <div class="receipt" id="receipt">
               <div class="receipt__empty">Ingen booking endnu.</div>
             </div>
-          </div>
 
+            <hr />
+
+            <h3>Mine bookinger</h3>
+            <div id="myBookings" class="muted">Indlæser...</div>
+          </div>
         </div>
       </div>
     </section>
