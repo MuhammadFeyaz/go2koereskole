@@ -116,17 +116,10 @@ html[data-theme="light"] .btn { background: rgba(255,255,255,0.7); }
   backdrop-filter: blur(10px);
 }
 
-.section {
-  padding: 44px 0;
-}
+.section { padding: 44px 0; }
+.section--alt { padding: 52px 0; }
 
-.section--alt {
-  padding: 52px 0;
-}
-
-.section__head h2, .section__head h3 {
-  margin: 0 0 6px;
-}
+.section__head h2, .section__head h3 { margin: 0 0 6px; }
 .section__head p { margin: 0; }
 
 /* -------- Navbar -------- */
@@ -145,6 +138,11 @@ html[data-theme="light"] .btn { background: rgba(255,255,255,0.7); }
   justify-content: space-between;
   gap: 14px;
   padding: 14px 0;
+}
+
+/* top row */
+.nav__toprow {
+  display: contents; /* desktop: brand + (hidden) toggle “acts like normal” */
 }
 
 .brand {
@@ -208,9 +206,9 @@ html[data-theme="light"] .lang-toggle {
 
 .theme-toggle:hover, .lang-toggle:hover { transform: translateY(-1px); }
 
-/* burger */
+/* burger button (DEFAULT: hidden on desktop) */
 .nav__toggle {
-  display: none;
+  display: none !important; /* <-- vigtig: burger må ikke dukke op på desktop */
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -223,15 +221,8 @@ html[data-theme="light"] .lang-toggle {
   outline-offset: 2px;
 }
 
-/* top row for mobile */
-.nav__toprow {
-  display: contents; /* becomes block on mobile */
-}
-
 /* -------- Hero -------- */
-.hero {
-  padding: 34px 0 18px;
-}
+.hero { padding: 34px 0 18px; }
 
 .hero__grid {
   display: grid;
@@ -250,17 +241,10 @@ html[data-theme="light"] .lang-toggle {
   color: var(--muted);
   font-size: 18px;
 }
-
-.hero__cta {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+.hero__cta { display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* -------- Next lesson card -------- */
-.next-lesson-card {
-  text-align: center;
-}
+.next-lesson-card { text-align: center; }
 .next-lesson-actions { margin-top: 16px; display: flex; justify-content: center; }
 .next-lesson-list { display: grid; gap: 10px; margin-top: 12px; }
 
@@ -375,9 +359,7 @@ input:focus, select:focus, textarea:focus {
 .receipt__empty { color: var(--muted); }
 
 /* -------- Footer -------- */
-.footer {
-  padding: 26px 0 40px;
-}
+.footer { padding: 26px 0 40px; }
 .footer__inner {
   display: flex;
   justify-content: space-between;
@@ -387,7 +369,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* =========================
-   Mobile fixes (NAV + layout)
+   Mobile fixes (layout)
    ========================= */
 @media (max-width: 980px) {
   .hero__grid { grid-template-columns: 1fr; }
@@ -396,18 +378,24 @@ input:focus, select:focus, textarea:focus {
   .form .row { grid-template-columns: 1fr; }
 }
 
-/* NAV mobile: collapsible */
+/* =========================
+   NAV mobile: collapsible
+   ========================= */
 @media (max-width: 860px) {
   .nav__toprow {
     display: flex;
     width: 100%;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
   }
 
-  .menu { display: none; }
-  .nav__right { display: none; }
-  .nav__toggle { display: inline-flex; align-items: center; gap: 8px; }
+  /* ✅ burger vises kun her */
+  .nav__toggle { display: inline-flex !important; align-items: center; gap: 8px; }
+
+  /* ✅ skjul menu & right indtil åbnet */
+  .menu { display: none !important; }
+  .nav__right { display: none !important; }
 
   .nav__inner {
     flex-wrap: wrap;
@@ -415,7 +403,7 @@ input:focus, select:focus, textarea:focus {
   }
 
   .nav.nav--open .menu {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     gap: 12px;
     padding: 12px 0;
@@ -423,7 +411,7 @@ input:focus, select:focus, textarea:focus {
   }
 
   .nav.nav--open .nav__right {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     align-items: stretch;
     width: 100%;
@@ -438,32 +426,9 @@ input:focus, select:focus, textarea:focus {
     justify-content: center;
   }
 }
-/* =========================
-   FIX: dropdown (select) i dark mode
-   ========================= */
 
-/* Fortæl browseren at native UI skal følge temaet */
-:root { color-scheme: light; }
-html[data-theme="dark"] { color-scheme: dark; }
-
-/* Sørg for at dropdown-listen (options) også bruger tema-farver */
-select,
-option,
-optgroup {
-  color: var(--text);
-}
-
-/* Mange browsere bruger option's baggrund i dropdown-listen */
-html[data-theme="dark"] select,
-html[data-theme="dark"] option,
-html[data-theme="dark"] optgroup {
-  background-color: #0c1a34; /* matcher dit --card look */
-  color: rgba(255,255,255,0.92);
-}
-
-html[data-theme="light"] select,
-html[data-theme="light"] option,
-html[data-theme="light"] optgroup {
-  background-color: #ffffff;
-  color: #0b1220;
+/* ✅ Ekstra sikkerhed: desktop tving menu/right synlige */
+@media (min-width: 861px) {
+  .menu { display: flex !important; }
+  .nav__right { display: flex !important; }
 }
