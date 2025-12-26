@@ -92,7 +92,9 @@ hr {
   user-select: none;
 }
 
-html[data-theme="light"] .btn { background: rgba(255,255,255,0.7); }
+html[data-theme="light"] .btn:not(.btn--primary) { 
+  background: rgba(255,255,255,0.7); 
+}
 
 .btn:hover { transform: translateY(-1px); }
 .btn:active { transform: translateY(0px); }
