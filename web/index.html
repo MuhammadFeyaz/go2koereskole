@@ -6,75 +6,114 @@
   <title>go2køreskole</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
+
 <body>
+  <!-- NAV -->
+  <header class="nav">
+    <div class="container nav__inner">
 
-<header class="nav">
-  <div class="container nav__inner">
-    <a class="brand" href="index.html"><span class="brand__dot"></span> go2køreskole</a>
+      <div class="nav__toprow">
+        <a class="brand" href="index.html">
+          <span class="brand__dot"></span> go2køreskole
+        </a>
 
-    <nav class="menu">
-      <a data-i18n="navHome" href="index.html">Hjem</a>
-      <a data-i18n="navBooking" href="booking.html">Booking</a>
-      <a data-i18n="navPrices" href="priser.html">Priser</a>
-      <a data-i18n="navContact" href="kontakt.html">Kontakt</a>
-    </nav>
+        <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu">
+          ☰ <span data-i18n="navMenu">Menu</span>
+        </button>
+      </div>
 
-    <a class="btn btn--primary" data-i18n="navBookNow" href="booking.html">Book nu</a>
+      <nav class="menu" id="navMenu">
+        <a data-i18n="navHome" href="index.html">Hjem</a>
+        <a data-i18n="navBooking" href="booking.html">Booking</a>
+        <a data-i18n="navPrices" href="priser.html">Priser</a>
+        <a data-i18n="navContact" href="kontakt.html">Kontakt</a>
+      </nav>
 
-    <button id="themeToggle" class="theme-toggle"><span id="themeIcon">🌙</span><span id="themeText">Mørk</span></button>
-    <button id="langToggle" class="lang-toggle"><span id="langText">DA</span></button>
+      <div class="nav__right">
+        <a class="btn btn--primary" data-i18n="navBookNow" href="booking.html">Book nu</a>
 
-    <div id="navUser">
-      <span id="navUserText"></span>
-      <a id="navLoginBtn" class="btn" href="login.html">Login</a>
-      <button id="navLogoutBtn" class="btn" style="display:none;">Log ud</button>
+        <button class="theme-toggle" id="themeToggle" type="button">
+          <span id="themeIcon">🌙</span>
+          <span id="themeText" data-i18n="themeDark">Mørk</span>
+        </button>
+
+        <button class="lang-toggle" id="langToggle" type="button">
+          <span id="langText">DA</span>
+        </button>
+
+        <div id="navUser" style="display:flex; gap:12px; align-items:center;">
+          <span id="navUserText" class="muted"></span>
+          <a id="navLoginBtn" class="btn" data-i18n="navLogin" href="login.html">Login</a>
+          <button id="navLogoutBtn" class="btn" data-i18n="navLogout" style="display:none;">Log ud</button>
+        </div>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<main>
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <h1 data-i18n="heroTitle">Book din kørelektion nemt 🚗</h1>
+          <p data-i18n="heroText">Vælg dato og tidspunkt — få svar hurtigt.</p>
 
-<section class="hero">
-  <div class="container hero__grid">
-    <div>
-      <h1 data-i18n="heroTitle">Book din kørelektion nemt 🚗</h1>
-      <p data-i18n="heroText">Vælg dato og tidspunkt — få svar hurtigt.</p>
-      <a class="btn btn--primary" href="booking.html" data-i18n="heroCTA1">Gå til booking</a>
-    </div>
-  </div>
-</section>
+          <div class="hero__cta">
+            <a class="btn btn--primary" data-i18n="heroCTA1" href="booking.html">Gå til booking</a>
+            <a class="btn" data-i18n="heroCTA2" href="priser.html">Se priser</a>
+          </div>
+        </div>
 
-<section class="section">
-  <div class="container">
-    <div class="card">
-      <h3 data-i18n="nextLessonTitle">Din kommende køretime</h3>
-      <div id="nextLessonContent" class="muted" data-i18n="nextLessonLogin">Log ind for at se din næste tid.</div>
-    </div>
-  </div>
-</section>
+        <div class="card">
+          <h3 data-i18n="hoursTitle">Åbningstider</h3>
+          <p>Man–Fre: 08–20<br>Lørdag: 10–16<br>Søndag: Lukket</p>
+        </div>
+      </div>
+    </section>
 
-<section class="section section--alt">
-  <div class="container about-grid">
-    <div>
-      <h2 data-i18n="aboutTitle"></h2>
-      <p data-i18n="aboutP1"></p>
-      <p data-i18n="aboutP2"></p>
-      <p data-i18n="aboutP3"></p>
-    </div>
-    <div>
-      <img src="./Go2koereskole-11-1536x1026.webp" style="width:100%;border-radius:20px;">
-    </div>
-  </div>
-</section>
+    <!-- NEXT LESSONS -->
+    <section class="section" id="nextLesson">
+      <div class="container">
+        <div class="card next-lesson-card">
+          <h3 data-i18n="nextLessonTitle">Din kommende køretime</h3>
 
-<footer class="footer">
-  <div class="container footer__inner">
-    <span>© go2køreskole</span>
-  </div>
-</footer>
+          <div id="nextLessonContent" class="muted" data-i18n="nextLessonLogin">
+            Log ind for at se din næste tid.
+          </div>
 
-</main>
+          <div class="next-lesson-actions">
+            <a class="btn btn--primary" href="booking.html" data-i18n="nextLessonCta">
+              Gå til booking
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<script src="./app.js"></script>
+    <!-- ABOUT (i bunden) -->
+    <section class="section section--alt" id="about">
+      <div class="container about-grid">
+        <div class="about-text">
+          <h2 data-i18n="aboutTitle">Om Go2 Køreskole i København</h2>
+          <p data-i18n="aboutP1"></p>
+          <p data-i18n="aboutP2"></p>
+          <p data-i18n="aboutP3"></p>
+        </div>
+
+        <div class="about-image">
+          <img src="./Go2koereskole-11-1536x1026.webp" alt="Go2 Køreskole elev i bil" />
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <span>© go2køreskole</span>
+        <span class="muted" data-i18n="footerTag">Køreskole booking</span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./app.js"></script>
 </body>
 </html>

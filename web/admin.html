@@ -3,96 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin – go2køreskole</title>
+  <title>go2køreskole – Admin</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 
-
 <body>
-  <!-- NAVBAR -->
+  <!-- NAV -->
   <header class="nav">
     <div class="container nav__inner">
-      <a class="brand" href="index.html">
-        <span class="brand__dot"></span> go2køreskole
-      </a>
 
-      <nav class="menu">
-        <a id="navHome" href="index.html">Hjem</a>
-        <a id="navBooking" href="booking.html">Booking</a>
-        <a id="navPrices" href="priser.html">Priser</a>
-        <a id="navContact" href="kontakt.html">Kontakt</a>
+      <div class="nav__toprow">
+        <a class="brand" href="index.html">
+          <span class="brand__dot"></span> go2køreskole
+        </a>
+
+        <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu">
+          ☰ <span data-i18n="navMenu">Menu</span>
+        </button>
+      </div>
+
+      <nav class="menu" id="navMenu">
+        <a data-i18n="navHome" href="index.html">Hjem</a>
+        <a data-i18n="navBooking" href="booking.html">Booking</a>
+        <a data-i18n="navPrices" href="priser.html">Priser</a>
+        <a data-i18n="navContact" href="kontakt.html">Kontakt</a>
       </nav>
 
-      <a id="navBookNow" class="btn btn--primary" href="booking.html">Book nu</a>
+      <div class="nav__right">
+        <a class="btn btn--primary" data-i18n="navBookNow" href="booking.html">Book nu</a>
 
-      <button class="theme-toggle" id="themeToggle" type="button">
-        <span id="themeIcon">🌙</span>
-        <span id="themeText">Mørk</span>
-      </button>
+        <button class="theme-toggle" id="themeToggle" type="button">
+          <span id="themeIcon">🌙</span>
+          <span id="themeText" data-i18n="themeDark">Mørk</span>
+        </button>
 
-      <button class="lang-toggle" id="langToggle" type="button" aria-label="Skift sprog">
-        <span id="langText">DA</span>
-      </button>
+        <button class="lang-toggle" id="langToggle" type="button">
+          <span id="langText">DA</span>
+        </button>
 
-      <div id="navUser" style="display:flex; gap:12px; align-items:center;">
-        <span id="navUserText" class="muted"></span>
-        <a id="navLoginBtn" class="btn" href="login.html">Login</a>
-        <button id="navLogoutBtn" class="btn" style="display:none;">Log ud</button>
+        <div id="navUser" style="display:flex; gap:12px; align-items:center;">
+          <span id="navUserText" class="muted"></span>
+          <a id="navLoginBtn" class="btn" data-i18n="navLogin" href="login.html">Login</a>
+          <button id="navLogoutBtn" class="btn" data-i18n="navLogout" style="display:none;">Log ud</button>
+        </div>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="section" style="padding-top:110px;">
-      <div class="container section__head">
-        <h1 style="margin:0 0 8px;">Admin</h1>
-        <p class="muted" style="margin:0;">Se bookinger og godkend/afvis. Opret elever.</p>
-      </div>
-<body class="page-admin">
+    <section class="section" style="padding-top:24px;">
+      <div class="container">
+        <div class="section__head" style="margin-bottom:14px;">
+          <h2 style="margin:0;">Admin</h2>
+          <p class="muted" style="margin:0;">Se bookinger og godkend/afvis. Opret elever.</p>
+        </div>
 
-      <div class="container" style="display:grid; gap:24px; grid-template-columns:1fr;">
-        <!-- Top row: create student + students list -->
-        <div style="display:grid; gap:24px; grid-template-columns:1fr;">
+        <div class="booking-grid">
+          <!-- Create student -->
           <div class="card">
             <h3 style="margin-top:0;">Opret elev</h3>
-            <form id="studentForm" class="form">
-              <div class="row">
-                <label class="field">
-                  <span>Navn</span>
-                  <input id="stuName" placeholder="Fx Muhammad Feyaz" required />
-                </label>
-                <label class="field">
-                  <span>Telefon</span>
-                  <input id="stuPhone" placeholder="+45 12 34 56 78" required />
-                </label>
-              </div>
+
+            <form id="createStudentForm">
+              <label class="field">
+                <span>Navn</span>
+                <input id="stuName" required placeholder="Fx Ahmad Ali" />
+              </label>
 
               <label class="field">
                 <span>E-mail</span>
-                <input id="stuEmail" type="email" placeholder="navn@mail.dk" required />
+                <input id="stuEmail" type="email" required placeholder="fx elev@email.com" />
               </label>
 
               <label class="field">
-                <span>Kodeord</span>
-                <input id="stuPassword" type="password" placeholder="Vælg kodeord" required />
+                <span>Telefon</span>
+                <input id="stuPhone" required placeholder="fx 12345678" />
               </label>
 
-              <button class="btn btn--primary" type="submit">Opret elev</button>
-              <div id="stuStatus" class="status" aria-live="polite"></div>
+              <label class="field">
+                <span>Midlertidigt kodeord</span>
+                <input id="stuPass" required placeholder="fx Elev123!" />
+              </label>
+
+              <button class="btn btn--primary btn--full" type="submit">Opret elev</button>
+              <div id="stuStatus" class="status" style="margin-top:12px;"></div>
             </form>
+
+            <hr />
+            <h3>Elever</h3>
+            <div id="studentsList" class="muted">Indlæser...</div>
           </div>
 
+          <!-- Bookings list -->
           <div class="card">
-            <h3 style="margin-top:0;">Elever</h3>
-            <div id="studentsList" class="muted">Indlæser…</div>
+            <h3 style="margin-top:0;">Bookinger</h3>
+            <div id="adminBookings" class="muted">Indlæser...</div>
           </div>
-        </div>
-
-        <!-- Bookings -->
-        <div class="card">
-          <h3 style="margin-top:0;">Bookinger</h3>
-          <p class="muted" style="margin-top:0;">Klik godkend/afvis. Godkendt blokkerer dobbel-booking (overlap).</p>
-          <div id="adminBookings" class="muted">Indlæser…</div>
         </div>
       </div>
     </section>
@@ -100,16 +105,13 @@
     <footer class="footer">
       <div class="container footer__inner">
         <span>© go2køreskole</span>
-        <span class="muted">Admin</span>
+        <span class="muted" data-i18n="footerTag">Køreskole booking</span>
       </div>
     </footer>
   </main>
 
-  <script src="./app.js"></script>
-
-  <!-- Admin logic (self-contained) -->
   <script>
-    (function () {
+    (async () => {
       const $ = (id) => document.getElementById(id);
 
       async function api(path, options = {}) {
@@ -127,6 +129,50 @@
           .replaceAll("'", "&#039;");
       }
 
+      // Guard: must be admin
+      const me = await api("/api/auth/me");
+      if (!me?.data?.user) {
+        window.location.href = "/login.html";
+        return;
+      }
+      if (me.data.user.role !== "admin") {
+        window.location.href = "/index.html";
+        return;
+      }
+
+      // Students
+      async function loadStudents() {
+        const el = $("studentsList");
+        if (!el) return;
+
+        const { res, data } = await api("/api/admin/students");
+        if (!res.ok) {
+          el.textContent = "Kunne ikke hente elever.";
+          return;
+        }
+
+        const list = data.students || [];
+        if (!list.length) {
+          el.textContent = "Ingen elever endnu.";
+          return;
+        }
+
+        el.innerHTML = `
+          <div style="display:grid; gap:10px;">
+            ${list.map(s => `
+              <div class="card" style="padding:14px; box-shadow:none;">
+                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                  <div><strong>${esc(s.name)}</strong></div>
+                  <div class="muted">${esc(s.phone)}</div>
+                </div>
+                <div class="muted" style="margin-top:6px;">${esc(s.email)}</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      // Bookings
       function badge(status) {
         const s = String(status || "PENDING").toUpperCase();
         if (s === "APPROVED") return "✅ GODKENDT";
@@ -134,88 +180,60 @@
         return "⏳ AFVENTER";
       }
 
-      async function requireAdminOrRedirect() {
-        const { data } = await api("/api/auth/me");
-        const u = data.user;
-        if (!u) { window.location.href = "/login.html"; return false; }
-        if (u.role !== "admin") { window.location.href = "/index.html"; return false; }
-        return true;
-      }
-
-      async function loadStudents() {
-        const el = $("studentsList");
-        if (!el) return;
-        const { res, data } = await api("/api/admin/students");
-        if (!res.ok) { el.textContent = "Kunne ikke hente elever."; return; }
-
-        const list = data.students || [];
-        if (!list.length) { el.textContent = "Ingen elever endnu."; return; }
-
-        el.innerHTML = `
-          <div style="display:grid; gap:10px;">
-            ${list.map(s => `
-              <div class="card" style="padding:14px;">
-                <div><strong>${esc(s.name)}</strong></div>
-                <div class="muted">${esc(s.email)} • ${esc(s.phone || "")}</div>
-              </div>
-            `).join("")}
-          </div>
-        `;
-      }
-
       async function loadBookings() {
         const el = $("adminBookings");
         if (!el) return;
 
         const { res, data } = await api("/api/admin/bookings");
-        if (!res.ok) { el.textContent = "Kunne ikke hente bookinger."; return; }
+        if (!res.ok) {
+          el.textContent = "Kunne ikke hente bookinger.";
+          return;
+        }
 
         const list = data.bookings || [];
-        if (!list.length) { el.textContent = "Ingen bookinger endnu."; return; }
+        if (!list.length) {
+          el.textContent = "Ingen bookinger endnu.";
+          return;
+        }
 
         el.innerHTML = `
           <div style="display:grid; gap:10px;">
             ${list.map(b => `
-              <div class="card" style="padding:14px;">
-                <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+              <div class="card" style="padding:14px; box-shadow:none;">
+                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
                   <div>
-                    <strong>${esc(b.fullName || b.email || "Elev")}</strong>
-                    <span class="muted">(${esc(b.studentEmail || b.email || "")})</span>
+                    <strong>${esc(b.fullName || b.email)}</strong>
+                    <span class="muted">(${esc(b.studentEmail || b.email)})</span>
                   </div>
                   <div class="muted"><strong>${badge(b.status)}</strong></div>
                 </div>
 
                 <div class="muted" style="margin-top:6px;">
-                  <strong>${esc(b.lessonType || "Kørelektion")}</strong> •
-                  ${esc(b.date)} kl. ${esc(b.startTime)} • ${esc(b.durationMin)} min
+                  ${esc(b.lessonType || "Kørelektion")} • ${esc(b.date)} kl. ${esc(b.startTime)} • ${esc(b.durationMin)} min
                 </div>
 
                 <div class="muted" style="margin-top:6px;">
-                  Adresse: ${esc(b.address || "-")}
+                  ${esc(b.address)}
                 </div>
 
                 ${b.note ? `<div class="muted" style="margin-top:6px;">Note: ${esc(b.note)}</div>` : ""}
 
-                <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-                  <button class="btn btn--primary" data-approve="${esc(b.id)}" ${String(b.status).toUpperCase()==="APPROVED" ? "disabled" : ""}>
-                    Godkend
-                  </button>
-                  <button class="btn" data-deny="${esc(b.id)}" ${String(b.status).toUpperCase()==="DENIED" ? "disabled" : ""}>
-                    Afvis
-                  </button>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+                  <button class="btn btn--primary" data-approve="${esc(b.id)}">Godkend</button>
+                  <button class="btn" data-deny="${esc(b.id)}">Afvis</button>
                 </div>
               </div>
             `).join("")}
           </div>
         `;
 
-        // Wire buttons
+        // Attach handlers
         el.querySelectorAll("[data-approve]").forEach(btn => {
           btn.addEventListener("click", async () => {
             const id = btn.getAttribute("data-approve");
             const { res, data } = await api(`/api/admin/bookings/${id}/approve`, { method: "POST" });
             if (!res.ok) {
-              alert(data?.message || "Kunne ikke godkende (måske overlap).");
+              alert(data?.message || "Kunne ikke godkende.");
               return;
             }
             loadBookings();
@@ -235,64 +253,49 @@
         });
       }
 
-      function setStatus(el, text, type="") {
-        if (!el) return;
-        el.textContent = text;
-        el.className = `status ${type}`.trim();
-      }
+      // Create student
+      const form = $("createStudentForm");
+      const statusEl = $("stuStatus");
+      const setStatus = (txt, type="") => {
+        if (!statusEl) return;
+        statusEl.textContent = txt;
+        statusEl.className = `status ${type}`.trim();
+      };
 
-      async function initStudentForm() {
-        const form = $("studentForm");
-        const statusEl = $("stuStatus");
-        if (!form) return;
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        setStatus("");
 
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          setStatus(statusEl, "");
+        const payload = {
+          name: $("stuName").value.trim(),
+          email: $("stuEmail").value.trim(),
+          phone: $("stuPhone").value.trim(),
+          password: $("stuPass").value
+        };
 
-          const payload = {
-            name: $("stuName")?.value?.trim() || "",
-            phone: $("stuPhone")?.value?.trim() || "",
-            email: $("stuEmail")?.value?.trim() || "",
-            password: $("stuPassword")?.value || ""
-          };
-
-          if (!payload.name || !payload.phone || !payload.email || !payload.password) {
-            setStatus(statusEl, "Udfyld alle felter.", "error");
-            return;
-          }
-
-          const { res, data } = await api("/api/admin/students", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-
-          if (!res.ok) {
-            setStatus(statusEl, data?.error === "EMAIL_EXISTS" ? "E-mail findes allerede." : "Kunne ikke oprette elev.", "error");
-            return;
-          }
-
-          setStatus(statusEl, "✅ Elev oprettet!", "success");
-          form.reset();
-          loadStudents();
+        const { res, data } = await api("/api/admin/students", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
-      }
 
-      async function init() {
-        const ok = await requireAdminOrRedirect();
-        if (!ok) return;
+        if (!res.ok) {
+          if (data?.error === "EMAIL_EXISTS") setStatus("E-mail findes allerede.", "error");
+          else setStatus(data?.error || "Kunne ikke oprette elev.", "error");
+          return;
+        }
 
-        await initStudentForm();
-        await loadStudents();
-        await loadBookings();
+        setStatus("✅ Elev oprettet!", "success");
+        form.reset();
+        loadStudents();
+      });
 
-        // auto refresh booking status
-        setInterval(loadBookings, 8000);
-      }
-
-      init();
+      await loadStudents();
+      await loadBookings();
+      setInterval(loadBookings, 8000);
     })();
   </script>
+
+  <script src="./app.js"></script>
 </body>
 </html>

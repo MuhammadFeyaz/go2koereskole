@@ -3,33 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Go2 køreskole – Kontakt</title>
+  <title>go2køreskole – Kontakt</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
+
 <body>
+  <!-- NAV -->
   <header class="nav">
-    <div class="nav__inner">
-      <a class="brand" href="index.html"><span class="brand__dot"></span>go2køreskole</a>
-      <nav class="menu">
-        <a href="index.html">Hjem</a><a href="booking.html">Booking</a><a href="priser.html">Priser</a><a href="kontakt.html">Kontakt</a>
+    <div class="container nav__inner">
+
+      <div class="nav__toprow">
+        <a class="brand" href="index.html">
+          <span class="brand__dot"></span> go2køreskole
+        </a>
+
+        <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu">
+          ☰ <span data-i18n="navMenu">Menu</span>
+        </button>
+      </div>
+
+      <nav class="menu" id="navMenu">
+        <a data-i18n="navHome" href="index.html">Hjem</a>
+        <a data-i18n="navBooking" href="booking.html">Booking</a>
+        <a data-i18n="navPrices" href="priser.html">Priser</a>
+        <a data-i18n="navContact" href="kontakt.html">Kontakt</a>
       </nav>
-      <a class="btn btn--primary" href="booking.html">Book nu</a>
-      <div id="navUser" style="display:flex; gap:12px; align-items:center;">
-        <span id="navUserText" class="muted" style="font-size:14px;"></span>
-        <a id="navLoginBtn" class="btn" href="login.html">Login</a>
-        <button id="navLogoutBtn" class="btn" style="display:none;" type="button">Log ud</button>
+
+      <div class="nav__right">
+        <a class="btn btn--primary" data-i18n="navBookNow" href="booking.html">Book nu</a>
+
+        <button class="theme-toggle" id="themeToggle" type="button">
+          <span id="themeIcon">🌙</span>
+          <span id="themeText" data-i18n="themeDark">Mørk</span>
+        </button>
+
+        <button class="lang-toggle" id="langToggle" type="button">
+          <span id="langText">DA</span>
+        </button>
+
+        <div id="navUser" style="display:flex; gap:12px; align-items:center;">
+          <span id="navUserText" class="muted"></span>
+          <a id="navLoginBtn" class="btn" data-i18n="navLogin" href="login.html">Login</a>
+          <button id="navLogoutBtn" class="btn" data-i18n="navLogout" style="display:none;">Log ud</button>
+        </div>
       </div>
     </div>
   </header>
-<body class="page-kontakt">
 
-  <main class="section" style="padding-top:110px;">
-    <div class="container">
-      <div class="section__head">
-        <h1>Kontakt</h1>
-        <p class="muted">Kommer snart.</p>
+  <main>
+    <section class="section" style="padding-top:24px;">
+      <div class="container">
+        <div class="section__head" style="margin-bottom:14px;">
+          <h2 style="margin:0;">Kontakt</h2>
+          <p class="muted" style="margin:0;">Skriv eller ring – vi svarer hurtigst muligt.</p>
+        </div>
+
+        <div class="booking-grid">
+          <div class="card">
+            <h3 style="margin-top:0;">Kontaktinfo</h3>
+            <p class="muted" style="margin:0 0 10px;">Køreskole i København</p>
+            <div class="next-lesson-list">
+              <div class="next-lesson-badge">
+                <div><strong>Telefon</strong></div>
+                <div class="muted">+45 12 34 56 78</div>
+              </div>
+              <div class="next-lesson-badge">
+                <div><strong>E-mail</strong></div>
+                <div class="muted">go2koereskole@gmail.com</div>
+              </div>
+              <div class="next-lesson-badge">
+                <div><strong>Åbningstider</strong></div>
+                <div class="muted">Man–Fre: 08–20 • Lørdag: 10–16 • Søndag: Lukket</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Send en besked</h3>
+            <p class="muted" style="margin-top:0;">(Denne formular sender ikke mail endnu – kan kobles på senere.)</p>
+
+            <form onsubmit="event.preventDefault(); alert('Tak! Vi vender tilbage.');">
+              <label class="field">
+                <span>Navn</span>
+                <input required placeholder="Dit navn" />
+              </label>
+
+              <label class="field">
+                <span>E-mail</span>
+                <input type="email" required placeholder="din@email.com" />
+              </label>
+
+              <label class="field">
+                <span>Besked</span>
+                <textarea rows="4" required placeholder="Skriv din besked..."></textarea>
+              </label>
+
+              <button class="btn btn--primary btn--full" type="submit">Send</button>
+            </form>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <span>© go2køreskole</span>
+        <span class="muted" data-i18n="footerTag">Køreskole booking</span>
+      </div>
+    </footer>
   </main>
 
   <script src="./app.js"></script>

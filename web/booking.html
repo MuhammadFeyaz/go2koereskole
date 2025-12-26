@@ -4,40 +4,48 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>go2køreskole – Booking</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
 
-<body class="page-booking">
+<body>
   <!-- NAV -->
   <header class="nav">
-    <div class="nav__inner">
-      <a class="brand" href="index.html">
-        <span class="brand__dot"></span>
-        go2køreskole
-      </a>
+    <div class="container nav__inner">
 
-      <nav class="menu">
-        <a href="index.html" data-i18n="navHome">Hjem</a>
-        <a href="booking.html" data-i18n="navBooking">Booking</a>
-        <a href="priser.html" data-i18n="navPrices">Priser</a>
-        <a href="kontakt.html" data-i18n="navContact">Kontakt</a>
+      <div class="nav__toprow">
+        <a class="brand" href="index.html">
+          <span class="brand__dot"></span> go2køreskole
+        </a>
+
+        <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu">
+          ☰ <span data-i18n="navMenu">Menu</span>
+        </button>
+      </div>
+
+      <nav class="menu" id="navMenu">
+        <a data-i18n="navHome" href="index.html">Hjem</a>
+        <a data-i18n="navBooking" href="booking.html">Booking</a>
+        <a data-i18n="navPrices" href="priser.html">Priser</a>
+        <a data-i18n="navContact" href="kontakt.html">Kontakt</a>
       </nav>
 
-      <div class="nav-actions" id="navUser">
-        <a class="btn btn--primary" href="booking.html" data-i18n="navBookNow">Book nu</a>
+      <div class="nav__right">
+        <a class="btn btn--primary" data-i18n="navBookNow" href="booking.html">Book nu</a>
 
-        <button class="theme-toggle" id="themeToggle" type="button" title="Tema">
+        <button class="theme-toggle" id="themeToggle" type="button">
           <span id="themeIcon">🌙</span>
           <span id="themeText" data-i18n="themeDark">Mørk</span>
         </button>
 
-        <button class="lang-toggle" id="langToggle" type="button" title="Sprog">
+        <button class="lang-toggle" id="langToggle" type="button">
           <span id="langText">DA</span>
         </button>
 
-        <span id="navUserText" class="nav-chip"></span>
-        <a id="navLoginBtn" class="btn" href="login.html" data-i18n="navLogin">Login</a>
-        <button id="navLogoutBtn" class="btn" type="button" style="display:none;" data-i18n="navLogout">Log ud</button>
+        <div id="navUser" style="display:flex; gap:12px; align-items:center;">
+          <span id="navUserText" class="muted"></span>
+          <a id="navLoginBtn" class="btn" data-i18n="navLogin" href="login.html">Login</a>
+          <button id="navLogoutBtn" class="btn" data-i18n="navLogout" style="display:none;">Log ud</button>
+        </div>
       </div>
     </div>
   </header>
@@ -49,37 +57,33 @@
           <h2 data-i18n="bookingTitle">Booking</h2>
           <p class="muted" data-i18n="bookingIntro">Udfyld formularen og afvent godkendelse.</p>
         </div>
-<!-- VERSION: 2025-12-25 19:41 -->
+
         <div class="booking-grid">
           <!-- FORM -->
           <div class="card">
             <form id="bookingForm" class="form">
               <label class="field">
-                <span>Vælg mødested</span>
+                <span data-i18n="meetingPlace">Vælg mødested</span>
                 <select id="address" required>
-                  <option value="">Vælg lokation…</option>
-                  <option value="Valby St.">Valby St.</option>
-                  <option value="Brøndby ">Brøndby </option>
-                  <option value="Amager – Sundbyvester Plads">Amager – Sundbyvester Plads</option>
-                  <option value="Glostrup">Glostrup </option>
+                  <option value="" data-i18n="pickLocation">Vælg lokation...</option>
                 </select>
               </label>
 
               <div class="row">
                 <label class="field">
-                  <span>Dato</span>
+                  <span data-i18n="date">Dato</span>
                   <input id="date" type="date" required />
                 </label>
 
                 <label class="field">
-                  <span>Tidspunkt</span>
+                  <span data-i18n="time">Tidspunkt</span>
                   <input id="time" type="time" value="09:00" required />
                 </label>
               </div>
 
               <div class="row">
                 <label class="field">
-                  <span>Varighed</span>
+                  <span data-i18n="duration">Varighed</span>
                   <select id="duration" required>
                     <option value="45">45 min</option>
                     <option value="60">60 min</option>
@@ -89,7 +93,7 @@
                 </label>
 
                 <label class="field">
-                  <span>Type</span>
+                  <span data-i18n="type">Type</span>
                   <select id="lessonType" required>
                     <option value="Kørelektion">Kørelektion</option>
                     <option value="Manøvrebane">Manøvrebane</option>
@@ -99,50 +103,44 @@
               </div>
 
               <label class="field">
-                <span>Note (valgfri)</span>
+                <span data-i18n="note">Note (valgfri)</span>
                 <textarea id="note" rows="3" placeholder="Fx jeg vil gerne øve parkering"></textarea>
               </label>
 
-              <button class="btn btn--primary btn--full" type="submit">Bekræft booking</button>
-              <p class="small muted">Ved at booke accepterer du vores vilkår.</p>
+              <button class="btn btn--primary btn--full" type="submit" data-i18n="confirmBooking">
+                Bekræft booking
+              </button>
 
               <div id="formStatus" class="status" aria-live="polite"></div>
             </form>
           </div>
 
-          <!-- MY BOOKINGS -->
+          <!-- RECEIPT + MY BOOKINGS -->
           <div class="card">
-            <h3>Mine bookinger</h3>
-            <p class="muted">Her kan du se status på dine tider.</p>
-
-            <div id="myBookings" class="muted">Indlæser…</div>
-
-            <div class="hint">
-              Tip: Status opdateres automatisk hvert 10. sekund.
-            </div>
-
-            <hr />
-
             <h3>Din booking-kvittering</h3>
             <p class="muted">Når du bekræfter, vises detaljerne her.</p>
 
             <div class="receipt" id="receipt">
               <div class="receipt__empty">Ingen booking endnu.</div>
             </div>
+
+            <hr />
+
+            <h3>Mine bookinger</h3>
+            <div id="myBookings" class="muted">Indlæser...</div>
           </div>
         </div>
-
       </div>
     </section>
 
     <footer class="footer">
       <div class="container footer__inner">
         <span>© go2køreskole</span>
-        <span class="muted">Booking demo</span>
+        <span class="muted" data-i18n="footerTag">Køreskole booking</span>
       </div>
     </footer>
   </main>
 
-  <script src="app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

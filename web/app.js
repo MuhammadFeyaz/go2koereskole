@@ -1,37 +1,10 @@
 (() => {
   const $ = (id) => document.getElementById(id);
 
-  // ---------------- Robust API (retry + timeout) ----------------
-  function sleep(ms) {
-    return new Promise((r) => setTimeout(r, ms));
-  }
-
-  async function api(path, options = {}, retries = 3) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8s
-
-    try {
-      const res = await fetch(path, {
-        credentials: "include",
-        signal: controller.signal,
-        ...options,
-      });
-
-      // Hvis response ikke er JSON (eller tom), så håndter pænt
-      const text = await res.text();
-      const data = text ? JSON.parse(text) : {};
-
-      return { res, data };
-    } catch (err) {
-      // Retry ved netværksfejl / timeout
-      if (retries > 0) {
-        await sleep(800);
-        return api(path, options, retries - 1);
-      }
-      return { res: { ok: false, status: 0 }, data: { error: "NETWORK_ERROR" } };
-    } finally {
-      clearTimeout(timeout);
-    }
+  async function api(path, options = {}) {
+    const res = await fetch(path, { credentials: "include", ...options });
+    const data = await res.json().catch(() => ({}));
+    return { res, data };
   }
 
   function esc(s) {
@@ -64,6 +37,7 @@
       navBookNow: "Book nu",
       navLogin: "Login",
       navLogout: "Log ud",
+      navMenu: "Menu",
 
       heroTitle: "Book din kørelektion nemt 🚗",
       heroText: "Vælg dato og tidspunkt — få svar hurtigt.",
@@ -73,7 +47,7 @@
       hoursTitle: "Åbningstider",
 
       nextLessonTitle: "Din kommende køretime",
-      nextLessonLogin: "Log ind for at se din næste tid.",
+      nextLessonLogin: "Log ind for at se dine kommende tider.",
       nextLessonCta: "Gå til booking",
       nextLessonNone: "Du har ingen kommende køretimer.",
       nextLessonNoApproved: "Du har ingen godkendte køretimer endnu.",
@@ -84,11 +58,25 @@
       invalidLocation: "Vælg venligst et gyldigt mødested.",
       bookingSent: "✅ Booking sendt! Afventer godkendelse.",
       bookingFailed: "Booking fejlede.",
-      timeTaken: "Tiden er allerede booket. Vælg et andet tidspunkt.",
+      timeTaken: "Tiden overlapper med en anden booking. Vælg et andet tidspunkt.",
       cannotLoadMyBookings: "Kunne ikke hente dine bookinger.",
       noneYet: "Ingen bookinger endnu.",
 
+      pickLocation: "Vælg lokation...",
+      meetingPlace: "Vælg mødested",
+      date: "Dato",
+      time: "Tidspunkt",
+      duration: "Varighed",
+      type: "Type",
+      note: "Note (valgfri)",
+      confirmBooking: "Bekræft booking",
+
       footerTag: "Køreskole booking",
+
+      aboutTitle: "Om Go2 Køreskole i København",
+      aboutP1: "Velkommen hos Go2 Køreskole i København! Mit navn er Karim, og jeg er ejer af køreskolen – så det er dermed mig, du kommer til at få som kørelærer.",
+      aboutP2: "Jeg er oprindeligt uddannet socialrådgiver, men har sidenhen valgt at skifte spor og få en levevej i køreskolebranchen.",
+      aboutP3: "Jeg har god empati og er god til at håndtere elevers individuelle problemer, så de får en så god proces som mulig. Jeg tager mit arbejde seriøst, men ønsker samtidig, at det skal være en sjov og lærerig proces at få kørekort!"
     },
 
     en: {
@@ -102,6 +90,7 @@
       navBookNow: "Book now",
       navLogin: "Login",
       navLogout: "Logout",
+      navMenu: "Menu",
 
       heroTitle: "Book your driving lesson easily 🚗",
       heroText: "Choose date and time — get a quick reply.",
@@ -110,8 +99,8 @@
 
       hoursTitle: "Opening hours",
 
-      nextLessonTitle: "Your upcoming lesson",
-      nextLessonLogin: "Log in to see your next lesson.",
+      nextLessonTitle: "Your upcoming lessons",
+      nextLessonLogin: "Log in to see your upcoming lessons.",
       nextLessonCta: "Go to booking",
       nextLessonNone: "You have no upcoming lessons.",
       nextLessonNoApproved: "You don’t have any approved lessons yet.",
@@ -119,14 +108,28 @@
       bookingTitle: "Booking",
       bookingIntro: "Fill out the form and wait for approval.",
       fillAll: "Please fill in all fields.",
-      invalidLocation: "Please select a valid pickup location.",
+      invalidLocation: "Please select a valid meeting place.",
       bookingSent: "✅ Booking sent! Waiting for approval.",
       bookingFailed: "Booking failed.",
-      timeTaken: "This time is already booked. Please choose another time.",
+      timeTaken: "This time overlaps an existing booking. Choose another time.",
       cannotLoadMyBookings: "Could not load your bookings.",
       noneYet: "No bookings yet.",
 
+      pickLocation: "Choose location...",
+      meetingPlace: "Meeting place",
+      date: "Date",
+      time: "Time",
+      duration: "Duration",
+      type: "Type",
+      note: "Note (optional)",
+      confirmBooking: "Confirm booking",
+
       footerTag: "Driving school booking",
+
+      aboutTitle: "About Go2 Driving School in Copenhagen",
+      aboutP1: "Welcome to Go2 Driving School in Copenhagen! My name is Karim, and I own the school — so I’ll be your instructor.",
+      aboutP2: "I was originally trained as a social worker, but later switched paths and found my career in the driving school industry.",
+      aboutP3: "I’m empathetic and good at supporting students individually so they get the best possible learning process. I take my work seriously, but I also want it to be fun and educational!"
     },
   };
 
@@ -155,10 +158,17 @@
     const langText = $("langText");
     if (langText) langText.textContent = lang.toUpperCase();
 
+    // keep theme button label correct
     const theme = document.documentElement.getAttribute("data-theme") || "light";
     const themeText = $("themeText");
-    if (themeText)
-      themeText.textContent = theme === "dark" ? dict.themeLight : dict.themeDark;
+    if (themeText) themeText.textContent = theme === "dark" ? dict.themeLight : dict.themeDark;
+
+    // booking select placeholder
+    const addrSelect = $("address");
+    if (addrSelect && addrSelect.tagName === "SELECT") {
+      const opt0 = addrSelect.querySelector('option[value=""]');
+      if (opt0) opt0.textContent = dict.pickLocation;
+    }
   }
 
   function initLanguage() {
@@ -167,21 +177,18 @@
     const btn = $("langToggle");
     if (!btn) return;
 
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const current = getLang();
       const next = current === "da" ? "en" : "da";
       setLang(next);
       applyI18n(next);
-      await loadAboutContent(); // opdater om-tekst
-      await loadNextLesson();   // opdater tekster i næste-time boksen
-      await loadMyBookings();   // opdater tekster i bookings
+      loadNextLessons();
     });
   }
 
   // ---------------- THEME (LIGHT/DARK) ----------------
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
-
     const icon = $("themeIcon");
     if (icon) icon.textContent = theme === "dark" ? "☀️" : "🌙";
 
@@ -193,8 +200,7 @@
   function initTheme() {
     const saved = localStorage.getItem("theme");
     const prefersDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
     const initial = saved || (prefersDark ? "dark" : "light");
     applyTheme(initial);
@@ -203,8 +209,7 @@
     if (!btn) return;
 
     btn.addEventListener("click", () => {
-      const current =
-        document.documentElement.getAttribute("data-theme") || "light";
+      const current = document.documentElement.getAttribute("data-theme") || "light";
       const next = current === "dark" ? "light" : "dark";
       localStorage.setItem("theme", next);
       applyTheme(next);
@@ -216,6 +221,34 @@
     }
   }
 
+  // ---------------- MOBILE NAV ----------------
+  function initMobileNav() {
+    const nav = document.querySelector(".nav");
+    const btn = $("navToggle");
+    const menu = $("navMenu");
+    if (!nav || !btn || !menu) return;
+
+    const close = () => {
+      nav.classList.remove("nav--open");
+      btn.setAttribute("aria-expanded", "false");
+    };
+
+    btn.addEventListener("click", () => {
+      const isOpen = nav.classList.toggle("nav--open");
+      btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
+
+    document.addEventListener("click", (e) => {
+      if (!nav.contains(e.target)) close();
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 860) close();
+    });
+  }
+
   // ---------------- NAVBAR "Logget ind som X" ----------------
   async function initNavbarUser() {
     const navText = $("navUserText");
@@ -223,10 +256,10 @@
     const logoutBtn = $("navLogoutBtn");
     if (!navText || !loginBtn || !logoutBtn) return;
 
-    const { res, data } = await api("/api/auth/me");
+    const { data } = await api("/api/auth/me");
     const user = data.user;
 
-    if (!res.ok || !user) {
+    if (!user) {
       navText.textContent = "";
       loginBtn.style.display = "";
       logoutBtn.style.display = "none";
@@ -243,32 +276,13 @@
     };
   }
 
-  // ---------------- ABOUT TEXT (from backend) ----------------
-  async function loadAboutContent() {
-    const aboutTitle = document.querySelector('[data-i18n="aboutTitle"]');
-    if (!aboutTitle) return;
-
-    const lang = getLang();
-    const { res, data } = await api(`/api/content/about?lang=${lang}`);
-    if (!res.ok || !data) return;
-
-    const p1 = document.querySelector('[data-i18n="aboutP1"]');
-    const p2 = document.querySelector('[data-i18n="aboutP2"]');
-    const p3 = document.querySelector('[data-i18n="aboutP3"]');
-
-    if (data?.title) aboutTitle.textContent = data.title;
-    if (p1 && data?.p1) p1.textContent = data.p1;
-    if (p2 && data?.p2) p2.textContent = data.p2;
-    if (p3 && data?.p3) p3.textContent = data.p3;
-  }
-
   // ---------------- NEXT LESSONS (index.html) ----------------
-  async function loadNextLesson() {
+  async function loadNextLessons() {
     const el = $("nextLessonContent");
     if (!el) return;
 
-    const { res: meRes, data: meData } = await api("/api/auth/me");
-    if (!meRes.ok || !meData?.user) {
+    const { data: meData } = await api("/api/auth/me");
+    if (!meData?.user) {
       el.textContent = t("nextLessonLogin");
       return;
     }
@@ -290,9 +304,7 @@
       .slice(0, 3);
 
     if (!upcomingApproved.length) {
-      const hasApproved = list.some(
-        (b) => String(b.status || "").toUpperCase() === "APPROVED"
-      );
+      const hasApproved = list.some((b) => String(b.status || "").toUpperCase() === "APPROVED");
       el.textContent = hasApproved ? t("nextLessonNone") : t("nextLessonNoApproved");
       return;
     }
@@ -303,12 +315,8 @@
           .map(
             (b) => `
           <div class="next-lesson-badge">
-            <div><strong>${esc(b.date)} • ${esc(b.startTime)} • ${esc(
-              b.durationMin
-            )} min</strong></div>
-            <div class="muted">${esc(b.lessonType || "Kørelektion")} • ${esc(
-              b.address || "-"
-            )}</div>
+            <div><strong>${esc(b.date)} • ${esc(b.startTime)} • ${esc(b.durationMin)} min</strong></div>
+            <div class="muted">${esc(b.lessonType || "Kørelektion")} • ${esc(b.address || "-")}</div>
           </div>
         `
           )
@@ -341,9 +349,7 @@
       return;
     }
 
-    list.sort((a, b) =>
-      `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`)
-    );
+    list.sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`));
 
     el.innerHTML = `
       <div style="display:grid; gap:10px;">
@@ -352,21 +358,13 @@
             (b) => `
           <div class="card" style="padding:14px;">
             <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-              <div><strong>${esc(
-                b.lessonType || "Kørelektion"
-              )}</strong> – ${esc(b.date)} kl. ${esc(b.startTime)}</div>
+              <div><strong>${esc(b.lessonType || "Kørelektion")}</strong> – ${esc(b.date)} kl. ${esc(b.startTime)}</div>
               <div class="muted"><strong>${badge(b.status)}</strong></div>
             </div>
             <div class="muted" style="margin-top:6px;">
               ${esc(b.durationMin)} min • ${esc(b.address)}
             </div>
-            ${
-              b.note
-                ? `<div class="muted" style="margin-top:6px;">Note: ${esc(
-                    b.note
-                  )}</div>`
-                : ""
-            }
+            ${b.note ? `<div class="muted" style="margin-top:6px;">Note: ${esc(b.note)}</div>` : ""}
           </div>
         `
           )
@@ -389,56 +387,43 @@
   function renderReceipt(b) {
     if (!receipt) return;
     receipt.innerHTML = `
-      <div class="receipt__row"><strong>Type:</strong> <span>${esc(
-        b.lessonType || "-"
-      )}</span></div>
-      <div class="receipt__row"><strong>Dato:</strong> <span>${esc(
-        b.date || "-"
-      )}</span></div>
-      <div class="receipt__row"><strong>Tid:</strong> <span>${esc(
-        b.startTime || "-"
-      )}</span></div>
-      <div class="receipt__row"><strong>Varighed:</strong> <span>${esc(
-        b.durationMin ?? "-"
-      )} min</span></div>
-      <div class="receipt__row"><strong>Mødested:</strong> <span>${esc(
-        b.address || "-"
-      )}</span></div>
-      ${
-        b.note
-          ? `<hr /><div class="receipt__row"><strong>Note:</strong> <span>${esc(
-              b.note
-            )}</span></div>`
-          : ""
-      }
+      <div class="receipt__row"><strong>Type:</strong> <span>${esc(b.lessonType || "-")}</span></div>
+      <div class="receipt__row"><strong>${esc(t("date"))}:</strong> <span>${esc(b.date || "-")}</span></div>
+      <div class="receipt__row"><strong>${esc(t("time"))}:</strong> <span>${esc(b.startTime || "-")}</span></div>
+      <div class="receipt__row"><strong>${esc(t("duration"))}:</strong> <span>${esc(b.durationMin ?? "-")} min</span></div>
+      <div class="receipt__row"><strong>${esc(t("meetingPlace"))}:</strong> <span>${esc(b.address || "-")}</span></div>
+      ${b.note ? `<hr /><div class="receipt__row"><strong>${esc(t("note"))}:</strong> <span>${esc(b.note)}</span></div>` : ""}
       <hr />
-      <div class="receipt__row"><strong>Status:</strong> <span>${esc(
-        b.status || "PENDING"
-      )}</span></div>
+      <div class="receipt__row"><strong>Status:</strong> <span>${esc(b.status || "PENDING")}</span></div>
     `;
   }
 
-  // ---------------- Init (with retry to prevent refresh glitches) ----------------
-  async function init() {
-    try {
-      initTheme();
-      initLanguage();
+  function initLocationsSelect() {
+    const address = $("address");
+    if (!address || address.tagName !== "SELECT") return;
 
-      await initNavbarUser();
-      await loadNextLesson();
-      await loadMyBookings();
-      await loadAboutContent();
-
-      if ($("nextLessonContent")) setInterval(loadNextLesson, 10000);
-      if ($("myBookings")) setInterval(loadMyBookings, 10000);
-    } catch (e) {
-      // Hvis backend er cold-start, prøv igen automatisk
-      console.warn("Init failed (probably cold start). Retrying...", e);
-      setTimeout(init, 1500);
-    }
+    address.innerHTML = `
+      <option value="">${esc(t("pickLocation"))}</option>
+      ${allowedLocations.map((loc) => `<option value="${esc(loc)}">${esc(loc)}</option>`).join("")}
+    `;
   }
 
-  document.addEventListener("DOMContentLoaded", init);
+  async function init() {
+    initTheme();
+    initLanguage();
+    initMobileNav();
+    await initNavbarUser();
+
+    initLocationsSelect();
+
+    await loadNextLessons();
+    if ($("nextLessonContent")) setInterval(loadNextLessons, 10000);
+
+    await loadMyBookings();
+    if ($("myBookings")) setInterval(loadMyBookings, 10000);
+  }
+
+  init();
 
   if (form) {
     form.addEventListener("submit", async (e) => {
@@ -454,12 +439,7 @@
         note: $("note")?.value?.trim() || "",
       };
 
-      if (
-        !payload.address ||
-        !payload.date ||
-        !payload.startTime ||
-        !payload.durationMin
-      ) {
+      if (!payload.address || !payload.date || !payload.startTime || !payload.durationMin) {
         setStatus(t("fillAll"), "error");
         return;
       }
@@ -487,7 +467,7 @@
       renderReceipt(data);
       setStatus(t("bookingSent"), "success");
       loadMyBookings();
-      loadNextLesson();
+      loadNextLessons();
     });
   }
 })();
