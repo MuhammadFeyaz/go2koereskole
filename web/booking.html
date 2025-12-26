@@ -3,140 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>go2køreskole – Booking</title>
+  <title>Booking • go2køreskole</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
-  <!-- NAV -->
   <header class="nav">
     <div class="container nav__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__dot"></span> go2køreskole
+      </a>
 
-      <div class="nav__toprow">
-        <a class="brand" href="index.html">
-          <span class="brand__dot"></span> go2køreskole
-        </a>
-
-        <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu">
-          ☰ <span data-i18n="navMenu">Menu</span>
-        </button>
-      </div>
+      <!-- (Valgfri burger knap hvis din CSS har mobilmenu) -->
+      <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-label="Menu">
+        ☰
+      </button>
 
       <nav class="menu" id="navMenu">
         <a data-i18n="navHome" href="index.html">Hjem</a>
-        <a data-i18n="navBooking" href="booking.html">Booking</a>
+        <a data-i18n="navBooking" href="booking.html" class="active">Booking</a>
         <a data-i18n="navPrices" href="priser.html">Priser</a>
         <a data-i18n="navContact" href="kontakt.html">Kontakt</a>
       </nav>
 
-      <div class="nav__right">
-        <a class="btn btn--primary" data-i18n="navBookNow" href="booking.html">Book nu</a>
+      <a class="btn btn--primary" data-i18n="navBookNow" href="booking.html">Book nu</a>
 
-        <button class="theme-toggle" id="themeToggle" type="button">
-          <span id="themeIcon">🌙</span>
-          <span id="themeText" data-i18n="themeDark">Mørk</span>
-        </button>
+      <button class="theme-toggle" id="themeToggle" type="button">
+        <span id="themeIcon">🌙</span>
+        <span id="themeText" data-i18n="themeDark">Mørk</span>
+      </button>
 
-        <button class="lang-toggle" id="langToggle" type="button">
-          <span id="langText">DA</span>
-        </button>
+      <button class="lang-toggle" id="langToggle" type="button">
+        <span id="langText">DA</span>
+      </button>
 
-        <div id="navUser" style="display:flex; gap:12px; align-items:center;">
-          <span id="navUserText" class="muted"></span>
-          <a id="navLoginBtn" class="btn" data-i18n="navLogin" href="login.html">Login</a>
-          <button id="navLogoutBtn" class="btn" data-i18n="navLogout" style="display:none;">Log ud</button>
-        </div>
+      <div id="navUser" style="display:flex; gap:12px; align-items:center;">
+        <span id="navUserText" class="muted"></span>
+        <a id="navLoginBtn" class="btn" data-i18n="navLogin" href="login.html">Login</a>
+        <button id="navLogoutBtn" class="btn" data-i18n="navLogout" style="display:none;">Log ud</button>
       </div>
     </div>
   </header>
 
-  <main>
-    <section class="section">
-      <div class="container">
-        <div class="section__head">
-          <h2 data-i18n="bookingTitle">Booking</h2>
-          <p class="muted" data-i18n="bookingIntro">Udfyld formularen og afvent godkendelse.</p>
-        </div>
+  <main class="page">
+    <div class="container">
+      <div class="page__head">
+        <h1 data-i18n="bookingTitle">Booking</h1>
+        <p class="muted" data-i18n="bookingIntro">Udfyld formularen og afvent godkendelse.</p>
+      </div>
 
-        <div class="booking-grid">
-          <!-- FORM -->
-          <div class="card">
-            <form id="bookingForm" class="form">
-              <label class="field">
-                <span data-i18n="meetingPlace">Vælg mødested</span>
-                <select id="address" required>
-                  <option value="" data-i18n="pickLocation">Vælg lokation...</option>
-                </select>
-              </label>
-
-              <div class="row">
-                <label class="field">
-                  <span data-i18n="date">Dato</span>
-                  <input id="date" type="date" required />
-                </label>
-
-                <label class="field">
-                  <span data-i18n="time">Tidspunkt</span>
-                  <input id="time" type="time" value="09:00" required />
-                </label>
-              </div>
-
-              <div class="row">
-                <label class="field">
-                  <span data-i18n="duration">Varighed</span>
-                  <select id="duration" required>
-                    <option value="45">45 min</option>
-                    <option value="60">60 min</option>
-                    <option value="90">90 min</option>
-                    <option value="120">120 min</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span data-i18n="type">Type</span>
-                  <select id="lessonType" required>
-                    <option value="Kørelektion">Kørelektion</option>
-                  </select>
-                </label>
-              </div>
-
-              <label class="field">
-                <span data-i18n="note">Note (valgfri)</span>
-                <textarea id="note" rows="3" placeholder="Fx jeg vil gerne øve parkering"></textarea>
-              </label>
-
-              <button class="btn btn--primary btn--full" type="submit" data-i18n="confirmBooking">
-                Bekræft booking
-              </button>
-
-              <div id="formStatus" class="status" aria-live="polite"></div>
-            </form>
-          </div>
-
-          <!-- RECEIPT + MY BOOKINGS -->
-          <div class="card">
-            <h3>Din booking-kvittering</h3>
-            <p class="muted">Når du bekræfter, vises detaljerne her.</p>
-
-            <div class="receipt" id="receipt">
-              <div class="receipt__empty">Ingen booking endnu.</div>
+      <div class="grid-2">
+        <!-- FORM -->
+        <section class="card">
+          <form id="bookingForm" class="form">
+            <div class="field">
+              <label for="address" data-i18n="meetingPlace">Vælg mødested</label>
+              <select id="address" name="address" required>
+                <option value="" data-i18n="pickLocation">Vælg lokation...</option>
+              </select>
             </div>
 
-            <hr />
+            <div class="field-row">
+              <div class="field">
+                <label for="date" data-i18n="date">Dato</label>
+                <input id="date" type="date" required />
+              </div>
 
-            <h3>Mine bookinger</h3>
-            <div id="myBookings" class="muted">Indlæser...</div>
-          </div>
-        </div>
-      </div>
-    </section>
+              <div class="field">
+                <label for="time" data-i18n="time">Tidspunkt</label>
+                <input id="time" type="time" value="09:00" required />
+              </div>
+            </div>
 
-    <footer class="footer">
-      <div class="container footer__inner">
-        <span>© go2køreskole</span>
-        <span class="muted" data-i18n="footerTag">Køreskole booking</span>
+            <div class="field-row">
+              <div class="field">
+                <label for="duration" data-i18n="duration">Varighed</label>
+                <select id="duration" required>
+                  <option value="45">45 min</option>
+                  <option value="60">60 min</option>
+                  <option value="90">90 min</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="lessonType" data-i18n="type">Type</label>
+                <select id="lessonType">
+                  <option value="Kørelektion">Kørelektion</option>
+                  <option value="Rutine-time">Rutine-time</option>
+                  <option value="Generhvervelse">Generhvervelse</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="note" data-i18n="note">Note (valgfri)</label>
+              <input id="note" type="text" placeholder="..." />
+            </div>
+
+            <div id="formStatus" class="status"></div>
+
+            <button class="btn btn--primary w-100" type="submit" data-i18n="confirmBooking">
+              Bekræft booking
+            </button>
+          </form>
+        </section>
+
+        <!-- RIGHT: My bookings + receipt -->
+        <aside class="card">
+          <h3>Mine bookinger</h3>
+          <div id="myBookings" class="muted">Indlæser...</div>
+
+          <hr style="margin:16px 0; opacity:.25;" />
+
+          <h3>Kvittering</h3>
+          <div id="receipt" class="muted">Ingen booking endnu.</div>
+        </aside>
       </div>
-    </footer>
+    </div>
   </main>
 
   <script src="./app.js"></script>
