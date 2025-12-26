@@ -438,3 +438,32 @@ input:focus, select:focus, textarea:focus {
     justify-content: center;
   }
 }
+/* =========================
+   FIX: dropdown (select) i dark mode
+   ========================= */
+
+/* Fortæl browseren at native UI skal følge temaet */
+:root { color-scheme: light; }
+html[data-theme="dark"] { color-scheme: dark; }
+
+/* Sørg for at dropdown-listen (options) også bruger tema-farver */
+select,
+option,
+optgroup {
+  color: var(--text);
+}
+
+/* Mange browsere bruger option's baggrund i dropdown-listen */
+html[data-theme="dark"] select,
+html[data-theme="dark"] option,
+html[data-theme="dark"] optgroup {
+  background-color: #0c1a34; /* matcher dit --card look */
+  color: rgba(255,255,255,0.92);
+}
+
+html[data-theme="light"] select,
+html[data-theme="light"] option,
+html[data-theme="light"] optgroup {
+  background-color: #ffffff;
+  color: #0b1220;
+}
