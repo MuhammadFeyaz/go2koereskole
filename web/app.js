@@ -16,13 +16,16 @@
       .replaceAll("'", "&#039;");
   }
 
-  // ---------- Locations (must match backend) ----------
-  const allowedLocations = [
-    "Valby – Langgade St.",
-    "Nørrebro – Nørrebro Station",
-    "Amager – Sundbyvester Plads",
-    "Hvidovre – Friheden Station",
-  ];
+  // ---------- Locations from backend ----------
+  let allowedLocations = [];
+
+  async function loadLocations() {
+    const { res, data } = await api("/api/locations");
+    if (!res.ok) return [];
+    const list = Array.isArray(data.locations) ? data.locations : [];
+    allowedLocations = list;
+    return list;
+  }
 
   // ---------------- I18N (DA/EN) ----------------
   const translations = {
@@ -74,9 +77,12 @@
       footerTag: "Køreskole booking",
 
       aboutTitle: "Om Go2 Køreskole i København",
-      aboutP1: "Velkommen hos Go2 Køreskole i København! Mit navn er Karim, og jeg er ejer af køreskolen – så det er dermed mig, du kommer til at få som kørelærer.",
-      aboutP2: "Jeg er oprindeligt uddannet socialrådgiver, men har sidenhen valgt at skifte spor og få en levevej i køreskolebranchen.",
-      aboutP3: "Jeg har god empati og er god til at håndtere elevers individuelle problemer, så de får en så god proces som mulig. Jeg tager mit arbejde seriøst, men ønsker samtidig, at det skal være en sjov og lærerig proces at få kørekort!"
+      aboutP1:
+        "Velkommen hos Go2 Køreskole i København! Mit navn er Karim, og jeg er ejer af køreskolen – så det er dermed mig, du kommer til at få som kørelærer.",
+      aboutP2:
+        "Jeg er oprindeligt uddannet socialrådgiver, men har sidenhen valgt at skifte spor og få en levevej i køreskolebranchen.",
+      aboutP3:
+        "Jeg har god empati og er god til at håndtere elevers individuelle problemer, så de får en så god proces som mulig. Jeg tager mit arbejde seriøst, men ønsker samtidig, at det skal være en sjov og lærerig proces at få kørekort!",
     },
 
     en: {
@@ -127,9 +133,12 @@
       footerTag: "Driving school booking",
 
       aboutTitle: "About Go2 Driving School in Copenhagen",
-      aboutP1: "Welcome to Go2 Driving School in Copenhagen! My name is Karim, and I own the school — so I’ll be your instructor.",
-      aboutP2: "I was originally trained as a social worker, but later switched paths and found my career in the driving school industry.",
-      aboutP3: "I’m empathetic and good at supporting students individually so they get the best possible learning process. I take my work seriously, but I also want it to be fun and educational!"
+      aboutP1:
+        "Welcome to Go2 Driving School in Copenhagen! My name is Karim, and I own the school — so I’ll be your instructor.",
+      aboutP2:
+        "I was originally trained as a social worker, but later switched paths and found my career in the driving school industry.",
+      aboutP3:
+        "I’m empathetic and good at supporting students individually so they get the best possible learning process. I take my work seriously, but I also want it to be fun and educational!",
     },
   };
 
@@ -158,12 +167,10 @@
     const langText = $("langText");
     if (langText) langText.textContent = lang.toUpperCase();
 
-    // keep theme button label correct
     const theme = document.documentElement.getAttribute("data-theme") || "light";
     const themeText = $("themeText");
     if (themeText) themeText.textContent = theme === "dark" ? dict.themeLight : dict.themeDark;
 
-    // booking select placeholder
     const addrSelect = $("address");
     if (addrSelect && addrSelect.tagName === "SELECT") {
       const opt0 = addrSelect.querySelector('option[value=""]');
@@ -186,7 +193,7 @@
     });
   }
 
-  // ---------------- THEME (LIGHT/DARK) ----------------
+  // ---------------- THEME ----------------
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     const icon = $("themeIcon");
@@ -199,9 +206,7 @@
 
   function initTheme() {
     const saved = localStorage.getItem("theme");
-    const prefersDark =
-      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     const initial = saved || (prefersDark ? "dark" : "light");
     applyTheme(initial);
 
@@ -221,7 +226,7 @@
     }
   }
 
-  // ---------------- MOBILE NAV ----------------
+  // ---------------- MOBILE NAV (FIX) ----------------
   function initMobileNav() {
     const nav = document.querySelector(".nav");
     const btn = $("navToggle");
@@ -233,14 +238,21 @@
       btn.setAttribute("aria-expanded", "false");
     };
 
-    btn.addEventListener("click", () => {
-      const isOpen = nav.classList.toggle("nav--open");
-      btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    });
+    btn.addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // ✅ prevents instant close
+        const isOpen = nav.classList.toggle("nav--open");
+        btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      },
+      { passive: false }
+    );
 
     menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
 
     document.addEventListener("click", (e) => {
+      if (!nav.classList.contains("nav--open")) return;
       if (!nav.contains(e.target)) close();
     });
 
@@ -249,7 +261,7 @@
     });
   }
 
-  // ---------------- NAVBAR "Logget ind som X" ----------------
+  // ---------------- NAVBAR USER ----------------
   async function initNavbarUser() {
     const navText = $("navUserText");
     const loginBtn = $("navLoginBtn");
@@ -325,7 +337,7 @@
     `;
   }
 
-  // ---------------- Booking page: list my bookings ----------------
+  // ---------------- BOOKINGS LIST (booking.html) ----------------
   function badge(status) {
     const s = String(status || "PENDING").toUpperCase();
     if (s === "APPROVED") return "✅ GODKENDT";
@@ -373,7 +385,7 @@
     `;
   }
 
-  // ---------------- Booking form submit ----------------
+  // ---------------- Booking form ----------------
   const form = $("bookingForm");
   const receipt = $("receipt");
   const statusEl = $("formStatus");
@@ -398,13 +410,15 @@
     `;
   }
 
-  function initLocationsSelect() {
+  async function initLocationsSelect() {
     const address = $("address");
     if (!address || address.tagName !== "SELECT") return;
 
+    const list = await loadLocations();
+
     address.innerHTML = `
       <option value="">${esc(t("pickLocation"))}</option>
-      ${allowedLocations.map((loc) => `<option value="${esc(loc)}">${esc(loc)}</option>`).join("")}
+      ${list.map((loc) => `<option value="${esc(loc)}">${esc(loc)}</option>`).join("")}
     `;
   }
 
@@ -414,7 +428,7 @@
     initMobileNav();
     await initNavbarUser();
 
-    initLocationsSelect();
+    await initLocationsSelect();
 
     await loadNextLessons();
     if ($("nextLessonContent")) setInterval(loadNextLessons, 10000);
@@ -444,11 +458,6 @@
         return;
       }
 
-      if (!allowedLocations.includes(payload.address)) {
-        setStatus(t("invalidLocation"), "error");
-        return;
-      }
-
       const { res, data } = await api("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -458,6 +467,8 @@
       if (!res.ok) {
         if (res.status === 409 && data?.error === "TIME_TAKEN") {
           setStatus(data?.message || t("timeTaken"), "error");
+        } else if (res.status === 400 && data?.error === "INVALID_LOCATION") {
+          setStatus(t("invalidLocation"), "error");
         } else {
           setStatus(data?.error || t("bookingFailed"), "error");
         }
