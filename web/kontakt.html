@@ -117,3 +117,23 @@
   <script src="./app.js"></script>
 </body>
 </html>
+<form id="contactForm" class="form">
+  <div class="field">
+    <span>Navn</span>
+    <input id="contactName" type="text" placeholder="Dit navn" required />
+  </div>
+
+  <div class="field">
+    <span>E-mail</span>
+    <input id="contactEmail" type="email" placeholder="din@email.com" required />
+  </div>
+
+  <div class="field">
+    <span>Besked</span>
+    <textarea id="contactMessage" rows="5" placeholder="Skriv din besked..." required></textarea>
+  </div>
+
+  <button class="btn btn--primary btn--full" type="submit">Send</button>
+
+  <div id="contactStatus" class="status" style="display:none;"></div>
+</form>

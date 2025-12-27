@@ -86,8 +86,8 @@
     },
 
     en: {
-      siteTitle: "go2 driving school",
-      brandName: "go2koereskole",
+      siteTitle: "Go2 driving school",
+      brandName: "Go2 driving school",
 
       themeDark: "Dark",
       themeLight: "Light",
@@ -360,3 +360,41 @@
 
   init();
 })();
+const form = document.getElementById("contactForm");
+const status = document.getElementById("contactStatus");
+
+if (form) {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    status.style.display = "block";
+    status.textContent = "Sender...";
+    status.className = "status";
+
+    const payload = {
+      name: document.getElementById("contactName").value.trim(),
+      email: document.getElementById("contactEmail").value.trim(),
+      message: document.getElementById("contactMessage").value.trim(),
+    };
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Fejl");
+
+      status.textContent = "✅ Besked sendt!";
+      status.className = "status success";
+      form.reset();
+
+    } catch (err) {
+      status.textContent = "❌ Kunne ikke sende besked.";
+      status.className = "status error";
+    }
+  });
+}
