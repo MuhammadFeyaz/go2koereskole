@@ -11,6 +11,57 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET || "devsecret"));
+import nodemailer from "nodemailer";
+
+function required(name, v) {
+  if (!v || String(v).trim().length === 0) throw new Error(`${name} mangler`);
+  return String(v).trim();
+}
+
+app.post("/api/contact", async (req, res) => {
+  try {
+    const name = required("Navn", req.body?.name);
+    const email = required("E-mail", req.body?.email);
+    const message = required("Besked", req.body?.message);
+
+    // (valgfrit) basic email check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Ugyldig e-mail" });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,         // fx: send.one.com
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: false,                       // 587 = STARTTLS
+      auth: {
+        user: process.env.SMTP_USER,       // din one.com mail
+        pass: process.env.SMTP_PASS,       // password
+      },
+    });
+
+    const to = process.env.CONTACT_TO || process.env.SMTP_USER;
+
+    await transporter.sendMail({
+      from: `"Go2 Kontakt" <${process.env.SMTP_USER}>`,
+      to,
+      replyTo: email, // så du kan trykke “reply” direkte til kunden
+      subject: `Ny besked fra kontaktformular: ${name}`,
+      text: `Navn: ${name}\nEmail: ${email}\n\nBesked:\n${message}\n`,
+      html: `
+        <h2>Ny besked fra kontaktformular</h2>
+        <p><b>Navn:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Besked:</b></p>
+        <pre style="white-space:pre-wrap">${message}</pre>
+      `,
+    });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("CONTACT ERROR:", err);
+    return res.status(500).json({ error: "Kunne ikke sende beskeden" });
+  }
+});
 
 /** ---------------- Sessions ---------------- */
 app.use(
