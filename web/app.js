@@ -34,8 +34,8 @@
   // ---------------- I18N (DA/EN) ----------------
   const translations = {
     da: {
-      siteTitle: "go2køreskole",
-      brandName: "go2køreskole",
+      siteTitle: "Go2 køreskole",
+      brandName: "Go2 køreskole",
 
       themeDark: "Mørk",
       themeLight: "Lys",
