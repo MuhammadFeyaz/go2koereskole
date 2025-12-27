@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>go2køreskole – Kontakt</title>
+  <title>Kontakt • go2køreskole</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 
@@ -47,60 +47,68 @@
           <button id="navLogoutBtn" class="btn" data-i18n="navLogout" style="display:none;">Log ud</button>
         </div>
       </div>
+
     </div>
   </header>
 
   <main>
-    <section class="section" style="padding-top:24px;">
+    <section class="section">
       <div class="container">
         <div class="section__head" style="margin-bottom:14px;">
-          <h2 style="margin:0;">Kontakt</h2>
-          <p class="muted" style="margin:0;">Skriv eller ring – vi svarer hurtigst muligt.</p>
+          <h2>Kontakt</h2>
+          <p class="muted">Skriv eller ring — vi svarer hurtigst muligt.</p>
         </div>
 
         <div class="booking-grid">
-          <div class="card">
-            <h3 style="margin-top:0;">Kontaktinfo</h3>
-            <p class="muted" style="margin:0 0 10px;">Køreskole i København</p>
-            <div class="next-lesson-list">
-              <div class="next-lesson-badge">
-                <div><strong>Telefon</strong></div>
-                <div class="muted">+45 22 61 97 20</div>
-              </div>
-              <div class="next-lesson-badge">
-                <div><strong>E-mail</strong></div>
-                <div class="muted">go2koereskole@gmail.com</div>
-              </div>
-              <div class="next-lesson-badge">
-                <div><strong>Åbningstider</strong></div>
-                <div class="muted">Man–Fre: 08–20 • Lørdag: 10–16 • Søndag: Lukket</div>
-              </div>
+          <!-- Left: contact info -->
+          <section class="card">
+            <h3>Kontaktinfo</h3>
+            <p class="muted">Køreskole i København</p>
+
+            <div class="card" style="padding:16px; margin-top:12px;">
+              <div style="font-weight:800; margin-bottom:6px;">Telefon</div>
+              <div class="muted">+45 22 61 97 20</div>
             </div>
-          </div>
 
-          <div class="card">
-            <h3 style="margin-top:0;">Send en besked</h3>
-            <p class="muted" style="margin-top:0;">(Denne formular sender ikke mail endnu – kan kobles på senere.)</p>
+            <div class="card" style="padding:16px; margin-top:12px;">
+              <div style="font-weight:800; margin-bottom:6px;">E-mail</div>
+              <div class="muted">go2koereskole@gmail.com</div>
+            </div>
 
-            <form onsubmit="event.preventDefault(); alert('Tak! Vi vender tilbage.');">
-              <label class="field">
+            <div class="card" style="padding:16px; margin-top:12px;">
+              <div style="font-weight:800; margin-bottom:6px;">Åbningstider</div>
+              <div class="muted">Man–Fre: 08–20 • Lørdag: 10–16 • Søndag: Lukket</div>
+            </div>
+          </section>
+
+          <!-- Right: form -->
+          <section class="card">
+            <h3>Send en besked</h3>
+            <p class="muted" style="margin-top:6px;">
+              (Denne formular sender mail — du får svar på din e-mail.)
+            </p>
+
+            <form id="contactForm" style="margin-top:14px;">
+              <div class="field">
                 <span>Navn</span>
-                <input required placeholder="Dit navn" />
-              </label>
+                <input id="contactName" type="text" placeholder="Dit navn" required />
+              </div>
 
-              <label class="field">
+              <div class="field">
                 <span>E-mail</span>
-                <input type="email" required placeholder="din@email.com" />
-              </label>
+                <input id="contactEmail" type="email" placeholder="din@email.com" required />
+              </div>
 
-              <label class="field">
+              <div class="field">
                 <span>Besked</span>
-                <textarea rows="4" required placeholder="Skriv din besked..."></textarea>
-              </label>
+                <textarea id="contactMessage" rows="6" placeholder="Skriv din besked..." required></textarea>
+              </div>
+
+              <div id="contactStatus" class="status" style="display:none;"></div>
 
               <button class="btn btn--primary btn--full" type="submit">Send</button>
             </form>
-          </div>
+          </section>
         </div>
 
       </div>
@@ -117,23 +125,3 @@
   <script src="./app.js"></script>
 </body>
 </html>
-<form id="contactForm" class="form">
-  <div class="field">
-    <span>Navn</span>
-    <input id="contactName" type="text" placeholder="Dit navn" required />
-  </div>
-
-  <div class="field">
-    <span>E-mail</span>
-    <input id="contactEmail" type="email" placeholder="din@email.com" required />
-  </div>
-
-  <div class="field">
-    <span>Besked</span>
-    <textarea id="contactMessage" rows="5" placeholder="Skriv din besked..." required></textarea>
-  </div>
-
-  <button class="btn btn--primary btn--full" type="submit">Send</button>
-
-  <div id="contactStatus" class="status" style="display:none;"></div>
-</form>
