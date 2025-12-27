@@ -35,8 +35,6 @@
   const translations = {
     da: {
       siteTitle: "Go2 køreskole",
-      brandName: "Go2 køreskole",
-
       themeDark: "Mørk",
       themeLight: "Lys",
 
@@ -55,10 +53,6 @@
       heroCTA2: "Se priser",
 
       hoursTitle: "Åbningstider",
-      hoursLine1: "Man–Fre: 08–20",
-      hoursLine2: "Lørdag: 10–16",
-      hoursLine3: "Søndag: Lukket",
-
       nextLessonTitle: "Din kommende køretime",
       nextLessonLogin: "Log ind for at se dine kommende tider.",
       nextLessonCta: "Gå til booking",
@@ -74,21 +68,27 @@
       timeTaken: "Tiden overlapper med en anden booking. Vælg et andet tidspunkt.",
       cannotLoadMyBookings: "Kunne ikke hente dine bookinger.",
       noneYet: "Ingen bookinger endnu.",
-
       pickLocation: "Vælg lokation...",
 
-      footerTag: "Køreskole booking",
+      meetingPlace: "Vælg mødested",
+      date: "Dato",
+      time: "Tidspunkt",
+      duration: "Varighed",
+      type: "Type",
+      note: "Note (valgfri)",
+      confirmBooking: "Bekræft booking",
 
-      aboutTitle: "Om Go2 Køreskole i København",
-      aboutP1: "Velkommen hos Go2 Køreskole i København! Mit navn er Karim, og jeg er ejer af køreskolen – så det er dermed mig, du kommer til at få som kørelærer.",
-      aboutP2: "Jeg er oprindeligt uddannet socialrådgiver, men har sidenhen valgt at skifte spor og få en levevej i køreskolebranchen.",
-      aboutP3: "Jeg har god empati og er god til at håndtere elevers individuelle problemer, så de får en så god proces som mulig. Jeg tager mit arbejde seriøst, men ønsker samtidig, at det skal være en sjov og lærerig proces at få kørekort!"
+      navLoggedInAs: "Logget ind som",
+
+      contactSending: "Sender...",
+      contactSent: "✅ Besked sendt!",
+      contactFailed: "❌ Kunne ikke sende besked.",
+
+      footerTag: "Køreskole booking",
     },
 
     en: {
       siteTitle: "Go2 driving school",
-      brandName: "Go2 driving school",
-
       themeDark: "Dark",
       themeLight: "Light",
 
@@ -107,10 +107,6 @@
       heroCTA2: "See prices",
 
       hoursTitle: "Opening hours",
-      hoursLine1: "Mon–Fri: 08–20",
-      hoursLine2: "Saturday: 10–16",
-      hoursLine3: "Sunday: Closed",
-
       nextLessonTitle: "Your upcoming lesson",
       nextLessonLogin: "Log in to see your upcoming lessons.",
       nextLessonCta: "Go to booking",
@@ -126,15 +122,23 @@
       timeTaken: "This time overlaps an existing booking. Choose another time.",
       cannotLoadMyBookings: "Could not load your bookings.",
       noneYet: "No bookings yet.",
-
       pickLocation: "Choose location...",
 
-      footerTag: "Driving school booking",
+      meetingPlace: "Meeting place",
+      date: "Date",
+      time: "Time",
+      duration: "Duration",
+      type: "Type",
+      note: "Note (optional)",
+      confirmBooking: "Confirm booking",
 
-      aboutTitle: "About Go2 Driving School in Copenhagen",
-      aboutP1: "Welcome to Go2 Driving School in Copenhagen! My name is Karim, and I own the school — so I’ll be your instructor.",
-      aboutP2: "I was originally trained as a social worker, but later switched paths and found my career in the driving school industry.",
-      aboutP3: "I’m empathetic and good at supporting students individually so they get the best possible learning process. I take my work seriously, but I also want it to be fun and educational!"
+      navLoggedInAs: "Logged in as",
+
+      contactSending: "Sending...",
+      contactSent: "✅ Message sent!",
+      contactFailed: "❌ Could not send message.",
+
+      footerTag: "Driving school booking",
     },
   };
 
@@ -152,7 +156,7 @@
   function applyI18n(lang) {
     const dict = translations[lang] || translations.da;
 
-    // ✅ oversæt titel
+    // oversæt titel (simpelt: samme title på alle sider)
     if (dict.siteTitle) document.title = dict.siteTitle;
 
     document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -166,7 +170,7 @@
     const langText = $("langText");
     if (langText) langText.textContent = lang.toUpperCase();
 
-    // keep theme button label correct
+    // theme button label correct
     const theme = document.documentElement.getAttribute("data-theme") || "light";
     const themeText = $("themeText");
     if (themeText) themeText.textContent = theme === "dark" ? dict.themeLight : dict.themeDark;
@@ -181,7 +185,6 @@
 
   function initLanguage() {
     applyI18n(getLang());
-
     const btn = $("langToggle");
     if (!btn) return;
 
@@ -190,7 +193,11 @@
       const next = current === "da" ? "en" : "da";
       setLang(next);
       applyI18n(next);
+
+      // opdater side-data der vises med tekst
       await loadNextLessons();
+      await loadMyBookings();
+      await initNavbarUser();
     });
   }
 
@@ -222,11 +229,6 @@
       localStorage.setItem("theme", next);
       applyTheme(next);
     });
-
-    if (!saved && window.matchMedia) {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      mq.addEventListener?.("change", (e) => applyTheme(e.matches ? "dark" : "light"));
-    }
   }
 
   // ---------------- MOBILE NAV ----------------
@@ -247,14 +249,8 @@
     });
 
     menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
-
-    document.addEventListener("click", (e) => {
-      if (!nav.contains(e.target)) close();
-    });
-
-    window.addEventListener("resize", () => {
-      if (window.innerWidth > 860) close();
-    });
+    document.addEventListener("click", (e) => { if (!nav.contains(e.target)) close(); });
+    window.addEventListener("resize", () => { if (window.innerWidth > 860) close(); });
   }
 
   // ---------------- NAVBAR USER ----------------
@@ -274,7 +270,7 @@
       return;
     }
 
-    navText.textContent = `Logget ind som ${user.name || user.email}`;
+    navText.textContent = `${t("navLoggedInAs")} ${user.name || user.email}`;
     loginBtn.style.display = "none";
     logoutBtn.style.display = "";
 
@@ -284,7 +280,7 @@
     };
   }
 
-  // ---------------- NEXT LESSONS ----------------
+  // ---------------- NEXT LESSONS (index.html) ----------------
   async function loadNextLessons() {
     const el = $("nextLessonContent");
     if (!el) return;
@@ -319,16 +315,56 @@
 
     el.innerHTML = `
       <div class="next-lesson-list">
-        ${upcomingApproved
-          .map(
-            (b) => `
+        ${upcomingApproved.map((b) => `
           <div class="next-lesson-badge">
             <div><strong>${esc(b.date)} • ${esc(b.startTime)} • ${esc(b.durationMin)} min</strong></div>
             <div class="muted">${esc(b.lessonType || "Kørelektion")} • ${esc(b.address || "-")}</div>
           </div>
-        `
-          )
-          .join("")}
+        `).join("")}
+      </div>
+    `;
+  }
+
+  // ---------------- Booking page: list my bookings ----------------
+  function badge(status) {
+    const s = String(status || "PENDING").toUpperCase();
+    if (s === "APPROVED") return "✅ GODKENDT";
+    if (s === "DENIED") return "❌ AFVIST";
+    return "⏳ AFVENTER";
+  }
+
+  async function loadMyBookings() {
+    const el = $("myBookings");
+    if (!el) return;
+
+    const { res, data } = await api("/api/bookings/my");
+    if (!res.ok) {
+      el.textContent = t("cannotLoadMyBookings");
+      return;
+    }
+
+    const list = data.bookings || [];
+    if (!list.length) {
+      el.textContent = t("noneYet");
+      return;
+    }
+
+    list.sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`));
+
+    el.innerHTML = `
+      <div style="display:grid; gap:10px;">
+        ${list.map((b) => `
+          <div class="card" style="padding:14px;">
+            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <div><strong>${esc(b.lessonType || "Kørelektion")}</strong> – ${esc(b.date)} kl. ${esc(b.startTime)}</div>
+              <div class="muted"><strong>${badge(b.status)}</strong></div>
+            </div>
+            <div class="muted" style="margin-top:6px;">
+              ${esc(b.durationMin)} min • ${esc(b.address)}
+            </div>
+            ${b.note ? `<div class="muted" style="margin-top:6px;">Note: ${esc(b.note)}</div>` : ""}
+          </div>
+        `).join("")}
       </div>
     `;
   }
@@ -344,57 +380,134 @@
     `;
   }
 
-  // ---------------- INIT ----------------
-  async function init() {
-    initTheme();
-    initLanguage();
-    initMobileNav();
-    await initNavbarUser();
-
-    // locations for booking page
-    await loadLocations();
-    initLocationsSelect();
-
-    await loadNextLessons();
+  // ---------------- Booking form submit ----------------
+  function setStatus(text, type = "") {
+    const statusEl = $("formStatus");
+    if (!statusEl) return;
+    statusEl.textContent = text;
+    statusEl.className = `status ${type}`.trim();
   }
 
-  init();
-})();
-const form = document.getElementById("contactForm");
-const status = document.getElementById("contactStatus");
+  function renderReceipt(b) {
+    const receipt = $("receipt");
+    if (!receipt) return;
+    receipt.innerHTML = `
+      <div class="receipt__row"><strong>Type:</strong> <span>${esc(b.lessonType || "-")}</span></div>
+      <div class="receipt__row"><strong>${esc(t("date"))}:</strong> <span>${esc(b.date || "-")}</span></div>
+      <div class="receipt__row"><strong>${esc(t("time"))}:</strong> <span>${esc(b.startTime || "-")}</span></div>
+      <div class="receipt__row"><strong>${esc(t("duration"))}:</strong> <span>${esc(b.durationMin ?? "-")} min</span></div>
+      <div class="receipt__row"><strong>${esc(t("meetingPlace"))}:</strong> <span>${esc(b.address || "-")}</span></div>
+      ${b.note ? `<hr /><div class="receipt__row"><strong>${esc(t("note"))}:</strong> <span>${esc(b.note)}</span></div>` : ""}
+      <hr />
+      <div class="receipt__row"><strong>Status:</strong> <span>${esc(b.status || "PENDING")}</span></div>
+    `;
+  }
 
-if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  function initBookingForm() {
+    const form = $("bookingForm");
+    if (!form) return;
 
-    status.style.display = "block";
-    status.textContent = "Sender...";
-    status.className = "status";
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setStatus("");
 
-    const payload = {
-      name: document.getElementById("contactName").value.trim(),
-      email: document.getElementById("contactEmail").value.trim(),
-      message: document.getElementById("contactMessage").value.trim(),
-    };
+      const payload = {
+        address: $("address")?.value?.trim() || "",
+        date: $("date")?.value || "",
+        startTime: $("time")?.value || "",
+        durationMin: Number($("duration")?.value || 0),
+        lessonType: $("lessonType")?.value || "Kørelektion",
+        note: $("note")?.value?.trim() || "",
+      };
 
-    try {
-      const res = await fetch("/api/contact", {
+      if (!payload.address || !payload.date || !payload.startTime || !payload.durationMin) {
+        setStatus(t("fillAll"), "error");
+        return;
+      }
+
+      if (!allowedLocations.includes(payload.address)) {
+        setStatus(t("invalidLocation"), "error");
+        return;
+      }
+
+      const { res, data } = await api("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 409 && data?.error === "TIME_TAKEN") {
+          setStatus(data?.message || t("timeTaken"), "error");
+        } else {
+          setStatus(data?.error || t("bookingFailed"), "error");
+        }
+        return;
+      }
 
-      if (!res.ok) throw new Error(data.error || "Fejl");
+      renderReceipt(data);
+      setStatus(t("bookingSent"), "success");
+      loadMyBookings();
+      loadNextLessons();
+    });
+  }
 
-      status.textContent = "✅ Besked sendt!";
-      status.className = "status success";
-      form.reset();
+  // ---------------- Contact form submit ----------------
+  function initContactForm() {
+    const form = $("contactForm");
+    const status = $("contactStatus");
+    if (!form || !status) return;
 
-    } catch (err) {
-      status.textContent = "❌ Kunne ikke sende besked.";
-      status.className = "status error";
-    }
-  });
-}
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      status.style.display = "block";
+      status.textContent = t("contactSending");
+      status.className = "status";
+
+      const payload = {
+        name: $("contactName")?.value?.trim() || "",
+        email: $("contactEmail")?.value?.trim() || "",
+        message: $("contactMessage")?.value?.trim() || "",
+      };
+
+      try {
+        const { res, data } = await api("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw new Error(data.error || "ERROR");
+
+        status.textContent = t("contactSent");
+        status.className = "status success";
+        form.reset();
+      } catch {
+        status.textContent = t("contactFailed");
+        status.className = "status error";
+      }
+    });
+  }
+
+  // ---------------- INIT ----------------
+  async function init() {
+    initTheme();
+    initLanguage();
+    initMobileNav();
+
+    await initNavbarUser();
+
+    // locations for booking page
+    await loadLocations();
+    initLocationsSelect();
+    initBookingForm();
+
+    await loadNextLessons();
+    await loadMyBookings();
+
+    initContactForm();
+  }
+
+  init();
+})();
