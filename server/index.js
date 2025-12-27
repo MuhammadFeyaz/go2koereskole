@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import path from "path";
@@ -11,57 +12,6 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET || "devsecret"));
-import nodemailer from "nodemailer";
-
-function required(name, v) {
-  if (!v || String(v).trim().length === 0) throw new Error(`${name} mangler`);
-  return String(v).trim();
-}
-
-app.post("/api/contact", async (req, res) => {
-  try {
-    const name = required("Navn", req.body?.name);
-    const email = required("E-mail", req.body?.email);
-    const message = required("Besked", req.body?.message);
-
-    // (valgfrit) basic email check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "Ugyldig e-mail" });
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,         // fx: send.one.com
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: false,                       // 587 = STARTTLS
-      auth: {
-        user: process.env.SMTP_USER,       // din one.com mail
-        pass: process.env.SMTP_PASS,       // password
-      },
-    });
-
-    const to = process.env.CONTACT_TO || process.env.SMTP_USER;
-
-    await transporter.sendMail({
-      from: `"Go2 Kontakt" <${process.env.SMTP_USER}>`,
-      to,
-      replyTo: email, // så du kan trykke “reply” direkte til kunden
-      subject: `Ny besked fra kontaktformular: ${name}`,
-      text: `Navn: ${name}\nEmail: ${email}\n\nBesked:\n${message}\n`,
-      html: `
-        <h2>Ny besked fra kontaktformular</h2>
-        <p><b>Navn:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Besked:</b></p>
-        <pre style="white-space:pre-wrap">${message}</pre>
-      `,
-    });
-
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error("CONTACT ERROR:", err);
-    return res.status(500).json({ error: "Kunne ikke sende beskeden" });
-  }
-});
 
 /** ---------------- Sessions ---------------- */
 app.use(
@@ -78,6 +28,31 @@ app.use(
     },
   })
 );
+
+/** ---------------- Mail (Contact form) ---------------- */
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+// (Valgfrit men nice) verificer SMTP ved start (logger kun)
+(async () => {
+  try {
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      await transporter.verify();
+      console.log("✅ SMTP transporter ready");
+    } else {
+      console.log("⚠️ SMTP env mangler (SMTP_HOST/SMTP_USER/SMTP_PASS). Contact-form vil fejle indtil de er sat.");
+    }
+  } catch (e) {
+    console.log("⚠️ SMTP verify failed:", e?.message || e);
+  }
+})();
 
 /** ---------------- Paths ---------------- */
 const __filename = fileURLToPath(import.meta.url);
@@ -121,16 +96,42 @@ function getAdminUser() {
 }
 
 /** ---------------- Locations (fixed list) ---------------- */
-const ALLOWED_LOCATIONS = [
-  "Valby St.",
-  "Brøndby",
-  "Amager",
-  "Glostrup",
-];
+const ALLOWED_LOCATIONS = ["Valby St.", "Brøndby", "Amager", "Glostrup"];
 
 /** ✅ Public endpoint: locations (frontend henter herfra) */
 app.get("/api/locations", (req, res) => {
   res.json({ locations: ALLOWED_LOCATIONS });
+});
+
+/** ---------------- Contact form endpoint ---------------- */
+app.post("/api/contact", async (req, res) => {
+  try {
+    const { name, email, message } = req.body || {};
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: "MISSING_FIELDS" });
+    }
+
+    const to = process.env.CONTACT_TO || "shahryaramir0713@gmail.com";
+
+    // basic sanity (ikke nødvendigt, men hjælper)
+    const safeName = String(name).trim().slice(0, 120);
+    const safeEmail = String(email).trim().slice(0, 200);
+    const safeMessage = String(message).trim().slice(0, 5000);
+
+    await transporter.sendMail({
+      from: `"Go2 Køreskole" <${process.env.SMTP_USER}>`,
+      to,
+      replyTo: safeEmail,
+      subject: `Kontaktformular: ${safeName}`,
+      text: `Navn: ${safeName}\nEmail: ${safeEmail}\n\n${safeMessage}`,
+    });
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error("Mail error:", e);
+    return res.status(500).json({ error: "MAIL_FAILED" });
+  }
 });
 
 /** ---------------- Guards ---------------- */
