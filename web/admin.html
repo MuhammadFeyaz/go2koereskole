@@ -55,11 +55,11 @@
       <div class="container">
         <div class="section__head" style="margin-bottom:14px;">
           <h2 style="margin:0;">Admin</h2>
-          <p class="muted" style="margin:0;">Se bookinger og godkend/afvis. Opret elever.</p>
+          <p class="muted" style="margin:0;">Se bookinger og godkend/afvis. Opret og slet elever.</p>
         </div>
 
         <div class="booking-grid">
-          <!-- Create student -->
+          <!-- Create student + Students list -->
           <div class="card">
             <h3 style="margin-top:0;">Opret elev</h3>
 
@@ -89,14 +89,20 @@
             </form>
 
             <hr />
-            <h3>Elever</h3>
-            <div id="studentsList" class="muted">Indlæser...</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+              <h3 style="margin:0;">Elever</h3>
+              <button class="btn" id="refreshStudentsBtn" type="button">Opdater</button>
+            </div>
+            <div id="studentsList" class="muted" style="margin-top:10px;">Indlæser...</div>
           </div>
 
           <!-- Bookings list -->
           <div class="card">
-            <h3 style="margin-top:0;">Bookinger</h3>
-            <div id="adminBookings" class="muted">Indlæser...</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+              <h3 style="margin:0;">Bookinger</h3>
+              <button class="btn" id="refreshBookingsBtn" type="button">Opdater</button>
+            </div>
+            <div id="adminBookings" class="muted" style="margin-top:10px;">Indlæser...</div>
           </div>
         </div>
       </div>
@@ -161,15 +167,48 @@
           <div style="display:grid; gap:10px;">
             ${list.map(s => `
               <div class="card" style="padding:14px; box-shadow:none;">
-                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-                  <div><strong>${esc(s.name)}</strong></div>
-                  <div class="muted">${esc(s.phone)}</div>
+                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
+                  <div>
+                    <div><strong>${esc(s.name)}</strong></div>
+                    <div class="muted" style="margin-top:4px;">${esc(s.email)}</div>
+                    <div class="muted" style="margin-top:2px;">${esc(s.phone || "")}</div>
+                  </div>
+
+                  <button class="btn"
+                    data-delete-student="${esc(s.email)}"
+                    style="border-color: rgba(255,120,120,.35);">
+                    🗑️ Slet elev
+                  </button>
                 </div>
-                <div class="muted" style="margin-top:6px;">${esc(s.email)}</div>
               </div>
             `).join("")}
           </div>
         `;
+
+        // delete handlers
+        el.querySelectorAll("[data-delete-student]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const email = btn.getAttribute("data-delete-student");
+            if (!email) return;
+
+            const ok = confirm(
+              `Vil du slette eleven:\n${email}\n\nDette sletter også elevens bookinger.`
+            );
+            if (!ok) return;
+
+            const { res: delRes, data: delData } = await api(`/api/admin/students/${encodeURIComponent(email)}`, {
+              method: "DELETE"
+            });
+
+            if (!delRes.ok) {
+              alert(delData?.error || "Kunne ikke slette elev.");
+              return;
+            }
+
+            await loadStudents();
+            await loadBookings(); // bookings kan ændre sig når elev slettes
+          });
+        });
       }
 
       // Bookings
@@ -227,7 +266,7 @@
           </div>
         `;
 
-        // Attach handlers
+        // Approve handlers
         el.querySelectorAll("[data-approve]").forEach(btn => {
           btn.addEventListener("click", async () => {
             const id = btn.getAttribute("data-approve");
@@ -240,6 +279,7 @@
           });
         });
 
+        // Deny handlers
         el.querySelectorAll("[data-deny]").forEach(btn => {
           btn.addEventListener("click", async () => {
             const id = btn.getAttribute("data-deny");
@@ -290,12 +330,17 @@
         loadStudents();
       });
 
+      // manual refresh buttons
+      $("refreshStudentsBtn")?.addEventListener("click", loadStudents);
+      $("refreshBookingsBtn")?.addEventListener("click", loadBookings);
+
       await loadStudents();
       await loadBookings();
       setInterval(loadBookings, 8000);
     })();
   </script>
 
+  <!-- din globale navbar/theme/lang -->
   <script src="./app.js"></script>
 </body>
 </html>

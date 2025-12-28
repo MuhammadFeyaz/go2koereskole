@@ -23,42 +23,20 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, // true hvis https
+      secure: process.env.NODE_ENV === "production", // true på https
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dage
     },
   })
 );
 
-/** ---------------- Mail (Contact form) ---------------- */
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-// (Valgfrit men nice) verificer SMTP ved start (logger kun)
-(async () => {
-  try {
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      await transporter.verify();
-      console.log("✅ SMTP transporter ready");
-    } else {
-      console.log("⚠️ SMTP env mangler (SMTP_HOST/SMTP_USER/SMTP_PASS). Contact-form vil fejle indtil de er sat.");
-    }
-  } catch (e) {
-    console.log("⚠️ SMTP verify failed:", e?.message || e);
-  }
-})();
-
 /** ---------------- Paths ---------------- */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// WEB folder ligger ved siden af server-folderen: go2koreskole-web/web
 const WEB_DIR = path.resolve(__dirname, "..", "web");
+
+// Server statiske filer (css/js/html)
 app.use(express.static(WEB_DIR));
 
 /** Eksplicitte routes */
@@ -103,37 +81,6 @@ app.get("/api/locations", (req, res) => {
   res.json({ locations: ALLOWED_LOCATIONS });
 });
 
-/** ---------------- Contact form endpoint ---------------- */
-app.post("/api/contact", async (req, res) => {
-  try {
-    const { name, email, message } = req.body || {};
-
-    if (!name || !email || !message) {
-      return res.status(400).json({ error: "MISSING_FIELDS" });
-    }
-
-    const to = process.env.CONTACT_TO || "shahryaramir0713@gmail.com";
-
-    // basic sanity (ikke nødvendigt, men hjælper)
-    const safeName = String(name).trim().slice(0, 120);
-    const safeEmail = String(email).trim().slice(0, 200);
-    const safeMessage = String(message).trim().slice(0, 5000);
-
-    await transporter.sendMail({
-      from: `"Go2 Køreskole" <${process.env.SMTP_USER}>`,
-      to,
-      replyTo: safeEmail,
-      subject: `Kontaktformular: ${safeName}`,
-      text: `Navn: ${safeName}\nEmail: ${safeEmail}\n\n${safeMessage}`,
-    });
-
-    return res.json({ ok: true });
-  } catch (e) {
-    console.error("Mail error:", e);
-    return res.status(500).json({ error: "MAIL_FAILED" });
-  }
-});
-
 /** ---------------- Guards ---------------- */
 function requireRole(role) {
   return (req, res, next) => {
@@ -153,22 +100,26 @@ function intervalsOverlap(startA, endA, startB, endB) {
   return startA < endB && startB < endA;
 }
 
-function hasOverlap(newBooking) {
+function hasOverlap(newBooking, ignoreBookingId = null) {
   const ns = toDateTime(newBooking.date, newBooking.startTime);
   if (!ns) return false;
 
   const ne = new Date(ns.getTime() + Number(newBooking.durationMin) * 60000);
 
   for (const b of bookings.values()) {
+    if (ignoreBookingId && b.id === ignoreBookingId) continue;
+
     const st = String(b.status || "PENDING").toUpperCase();
-    if (st === "DENIED") continue;
+    if (st === "DENIED") continue; // DENIED blokerer ikke tid
 
     const bs = toDateTime(b.date, b.startTime);
     if (!bs) continue;
+
     const be = new Date(bs.getTime() + Number(b.durationMin) * 60000);
 
     if (intervalsOverlap(ns, ne, bs, be)) return true;
   }
+
   return false;
 }
 
@@ -251,7 +202,27 @@ app.get("/api/admin/students", requireRole("admin"), (req, res) => {
   res.json({ students: list });
 });
 
+/** ✅ Admin: delete student (and their bookings) */
+app.delete("/api/admin/students/:email", requireRole("admin"), (req, res) => {
+  const emailLower = String(req.params.email || "").toLowerCase().trim();
+  if (!emailLower) return res.status(400).json({ error: "MISSING_EMAIL" });
+
+  const stu = students.get(emailLower);
+  if (!stu) return res.status(404).json({ error: "NOT_FOUND" });
+
+  // delete student
+  students.delete(emailLower);
+
+  // delete their bookings too
+  for (const [id, b] of bookings.entries()) {
+    if (String(b.studentId) === String(stu.id)) bookings.delete(id);
+  }
+
+  return res.json({ ok: true });
+});
+
 /** ---------------- Booking ---------------- */
+// Student creates booking
 app.post("/api/bookings", requireRole("student"), (req, res) => {
   const { address, date, startTime, durationMin, note, lessonType } = req.body || {};
   if (!address || !date || !startTime || !durationMin) return res.status(400).json({ error: "MISSING_FIELDS" });
@@ -280,6 +251,7 @@ app.post("/api/bookings", requireRole("student"), (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
+  // overlap protection (blocks PENDING + APPROVED)
   if (hasOverlap(newBooking)) {
     return res.status(409).json({
       error: "TIME_TAKEN",
@@ -291,6 +263,7 @@ app.post("/api/bookings", requireRole("student"), (req, res) => {
   res.json(newBooking);
 });
 
+// Student: my bookings
 app.get("/api/bookings/my", requireRole("student"), (req, res) => {
   const user = req.session.user;
   const list = [...bookings.values()]
@@ -300,20 +273,20 @@ app.get("/api/bookings/my", requireRole("student"), (req, res) => {
   res.json({ bookings: list });
 });
 
+// Admin: all bookings
 app.get("/api/admin/bookings", requireRole("admin"), (req, res) => {
   const list = [...bookings.values()].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   res.json({ bookings: list });
 });
 
+// Admin approve
 app.post("/api/admin/bookings/:id/approve", requireRole("admin"), (req, res) => {
   const b = bookings.get(req.params.id);
   if (!b) return res.status(404).json({ error: "NOT_FOUND" });
 
+  // Ensure it doesn't conflict (ignore itself)
   const clone = { ...b, status: "APPROVED" };
-
-  bookings.delete(b.id);
-  const conflict = hasOverlap(clone);
-  bookings.set(b.id, b);
+  const conflict = hasOverlap(clone, b.id);
 
   if (conflict) {
     return res.status(409).json({
@@ -326,11 +299,45 @@ app.post("/api/admin/bookings/:id/approve", requireRole("admin"), (req, res) => 
   res.json({ ok: true, booking: b });
 });
 
+// Admin deny
 app.post("/api/admin/bookings/:id/deny", requireRole("admin"), (req, res) => {
   const b = bookings.get(req.params.id);
   if (!b) return res.status(404).json({ error: "NOT_FOUND" });
   b.status = "DENIED";
   res.json({ ok: true, booking: b });
+});
+
+/** ---------------- Contact Email (Nodemailer) ---------------- */
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false, // true hvis port 465
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+app.post("/api/contact", async (req, res) => {
+  try {
+    const { name, email, message } = req.body || {};
+    if (!name || !email || !message) return res.status(400).json({ error: "MISSING_FIELDS" });
+
+    const to = process.env.CONTACT_TO || "shahryaramir0713@gmail.com";
+
+    await transporter.sendMail({
+      from: `"Go2 Køreskole" <${process.env.SMTP_USER}>`,
+      to,
+      replyTo: String(email),
+      subject: `Kontaktformular: ${String(name)}`,
+      text: `Navn: ${name}\nEmail: ${email}\n\n${message}`,
+    });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "MAIL_FAILED" });
+  }
 });
 
 /** ---------------- Start server ---------------- */
