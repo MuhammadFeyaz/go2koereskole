@@ -10,6 +10,8 @@ import bcrypt from "bcryptjs";
 dotenv.config();
 
 const app = express();
+const app = express();
+app.set("trust proxy", 1); // ✅ vigtigt på Heroku / proxy
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET || "devsecret"));
 
@@ -23,11 +25,12 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production", // true på https
+      secure: "auto", // ✅ fungerer på både http og https bag proxy
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dage
     },
   })
 );
+
 
 /** ---------------- Paths ---------------- */
 const __filename = fileURLToPath(import.meta.url);
